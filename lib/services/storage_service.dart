@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/presentation.dart';
 import '../models/creative_resource.dart';
+import '../models/speech.dart';
 
 class StorageService {
   static const String _presentationsKey = 'presentations';
   static const String _resourcesKey = 'creative_resources';
+  static const String _speechesKey = 'speeches';
   static const String _onboardingCompletedKey = 'onboarding_completed';
 
   static StorageService? _instance;
@@ -114,5 +116,48 @@ class StorageService {
   Future<List<CreativeResource>> getResourcesByType(ResourceType type) async {
     final resources = await getCreativeResources();
     return resources.where((r) => r.type == type).toList();
+  }
+
+  Future<List<Speech>> getSpeeches() async {
+    final String? data = _prefs.getString(_speechesKey);
+    if (data == null) return [];
+
+    final List<dynamic> jsonList = jsonDecode(data);
+    return jsonList.map((json) => Speech.fromJson(json)).toList();
+  }
+
+  Future<void> saveSpeeches(List<Speech> speeches) async {
+    final String data = jsonEncode(speeches.map((s) => s.toJson()).toList());
+    await _prefs.setString(_speechesKey, data);
+  }
+
+  Future<void> addSpeech(Speech speech) async {
+    final speeches = await getSpeeches();
+    speeches.add(speech);
+    await saveSpeeches(speeches);
+  }
+
+  Future<void> updateSpeech(Speech speech) async {
+    final speeches = await getSpeeches();
+    final index = speeches.indexWhere((s) => s.id == speech.id);
+    if (index != -1) {
+      speeches[index] = speech;
+      await saveSpeeches(speeches);
+    }
+  }
+
+  Future<void> deleteSpeech(String id) async {
+    final speeches = await getSpeeches();
+    speeches.removeWhere((s) => s.id == id);
+    await saveSpeeches(speeches);
+  }
+
+  Future<Speech?> getSpeech(String id) async {
+    final speeches = await getSpeeches();
+    try {
+      return speeches.firstWhere((s) => s.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 }

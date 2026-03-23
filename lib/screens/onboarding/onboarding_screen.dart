@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/storage_service.dart';
-import '../home_screen.dart';
+import '../home_screen_new.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,31 +16,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingPage> _pages = [
     const OnboardingPage(
-      title: 'Bem-vindo ao\nPalestrante de Sucesso',
+      title: 'Bem-vindo ao\nPoder de Convencer',
       description:
-          'Transforme sua comunicação em missão. Aprenda a provocar ação imediata na sua audiência.',
-      icon: Icons.mic,
+          'Método Shinyashiki + 53 Características de Oratória do livro be-T para transformar você em um orador de excelência.',
+      icon: Icons.record_voice_over,
       color: AppTheme.primaryColor,
     ),
     const OnboardingPage(
-      title: 'Planeje com Propósito',
+      title: 'Ciclo de 5 Passos',
       description:
-          'Defina seu KPI de sucesso antes de criar. O sucesso não é medido por aplausos, mas por objetivos realizados.',
-      icon: Icons.track_changes,
+          'Planejar, Preparar, Treinar, Executar e Aprimorar. Um método completo para desenvolver sua oratória.',
+      icon: Icons.loop,
       color: AppTheme.secondaryColor,
     ),
     const OnboardingPage(
-      title: 'Arquitetura da Mensagem',
+      title: '53 Características',
       description:
-          'Estruture sua apresentação com os 8 elementos fundamentais do Método Shinyashiki.',
-      icon: Icons.architecture,
+          'Acesso completo às características de oratória do livro be-T com ações práticas e explicações detalhadas.',
+      icon: Icons.menu_book,
       color: AppTheme.accentColor,
     ),
     const OnboardingPage(
-      title: 'Treine e Execute',
+      title: 'Método L.E.I.A.',
       description:
-          'Ensaie com o simulador de plateia, use o Modo Palco e acompanhe suas métricas de sucesso.',
-      icon: Icons.trending_up,
+          'Leia, Explique, Ilustre e Aplique. Aprenda a estruturar seus discursos de forma profunda e memorável.',
+      icon: Icons.auto_stories,
       color: AppTheme.primaryColor,
     ),
   ];
@@ -66,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const HomeScreenNew()),
       );
     }
   }
