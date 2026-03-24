@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/speech.dart';
 import '../../providers/speech_provider.dart';
 import '../../services/characteristics_service.dart';
+import '../../services/api_service.dart';
 
 class OutlineEditorScreen extends StatefulWidget {
   final Speech speech;
@@ -24,7 +25,12 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
 
   final _introController = TextEditingController();
   final _conclusionController = TextEditingController();
+  final _originalOutlineController = TextEditingController();
+  final _completeManuscriptController = TextEditingController();
+  final _initialCommentController = TextEditingController();
+  final _finalCommentController = TextEditingController();
   final List<_MainPointControllers> _pointControllers = [];
+  bool _isGenerating = false;
 
   @override
   void initState() {
@@ -36,6 +42,10 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
   void _loadControllers() {
     _introController.text = _outline.introduction;
     _conclusionController.text = _outline.conclusion;
+    _originalOutlineController.text = widget.speech.originalOutline;
+    _completeManuscriptController.text = widget.speech.completeManuscript;
+    _initialCommentController.text = widget.speech.initialComment;
+    _finalCommentController.text = widget.speech.finalComment;
 
     for (final point in _outline.mainPoints) {
       _pointControllers.add(_MainPointControllers(point));
@@ -43,14 +53,86 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
   }
 
   @override
+  void dispose() {
+    _introController.dispose();
+    _conclusionController.dispose();
+    _originalOutlineController.dispose();
+    _completeManuscriptController.dispose();
+    _initialCommentController.dispose();
+    _finalCommentController.dispose();
+    for (var c in _pointControllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _saveAll() async {
+    final updatedOutline = _outline.copyWith(
+      introduction: _introController.text,
+      conclusion: _conclusionController.text,
+      mainPoints: _pointControllers.map((c) => c.toMainPoint()).toList(),
+    );
+
+    final updatedSpeech = widget.speech.copyWith(
+      outline: updatedOutline,
+      originalOutline: _originalOutlineController.text,
+      completeManuscript: _completeManuscriptController.text,
+      initialComment: _initialCommentController.text,
+      finalComment: _finalCommentController.text,
+    );
+
+    await context.read<SpeechProvider>().updateSpeech(updatedSpeech);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tudo salvo com sucesso!')),
+      );
+    }
+  }
+
+  Future<void> _generateManuscript() async {
+    if (_originalOutlineController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Insira o esboço original para gerar o manuscrito.')),
+      );
+      return;
+    }
+
+    setState(() => _isGenerating = true);
+    try {
+      final result = await ApiService().generateManuscript(_originalOutlineController.text);
+      setState(() {
+        _completeManuscriptController.text = result['manuscrito_completo'] ?? '';
+        _initialCommentController.text = result['comentario_inicial'] ?? '';
+        _finalCommentController.text = result['comentario_final'] ?? '';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Manuscrito gerado com IA!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao gerar: $e')),
+      );
+    } finally {
+      setState(() => _isGenerating = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Esboço do Discurso'),
+        title: const Text('Etapa 2: Preparar'),
         actions: [
+          if (_isGenerating)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: _saveOutline,
+            onPressed: _saveAll,
           ),
         ],
       ),
@@ -61,7 +143,13 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildProgressCard(),
+                _buildAIToolbox(),
+                const SizedBox(height: 16),
+                _buildOriginalOutlineToggle(),
+                const SizedBox(height: 12),
+                _buildManuscriptToggle(),
+                const SizedBox(height: 16),
+                const Divider(),
                 const SizedBox(height: 16),
                 _buildIntroductionSection(),
                 const SizedBox(height: 16),
@@ -85,6 +173,10 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
   }
 
   Widget _buildObjectiveHeader() {
+    final focus = widget.speech.focusCharacteristicId != null
+        ? CharacteristicsService.instance.getCharacteristicById(widget.speech.focusCharacteristicId!)
+        : null;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -94,86 +186,137 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  widget.speech.type == SpeechType.student10min
-                      ? '10 min'
-                      : '30 min',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ),
-              const Spacer(),
-              if (widget.speech.focusCharacteristicId != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.secondaryColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Foco: ${CharacteristicsService.instance.getCharacteristicById(widget.speech.focusCharacteristicId!)?.title ?? ''}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
+              _buildBadge(widget.speech.type == SpeechType.student10min ? '10 min' : '30 min'),
+              if (focus != null) ...[
+                const SizedBox(width: 8),
+                _buildBadge('Foco: ${focus.title}', color: AppTheme.secondaryColor),
+              ],
             ],
           ),
           const SizedBox(height: 8),
           Text(
             'Objetivo: ${widget.speech.centralObjective}',
-            style: const TextStyle(color: Colors.white),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProgressCard() {
-    final progress = _calculateProgress();
+  Widget _buildBadge(String text, {Color? color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color ?? Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 11)),
+    );
+  }
+
+  Widget _buildAIToolbox() {
     return Card(
+      color: AppTheme.primaryColor.withOpacity(0.05),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Progresso do Esboço',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  '${(progress * 100).toInt()}%',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
+                const Icon(Icons.auto_awesome, color: AppTheme.primaryColor, size: 20),
+                const SizedBox(width: 8),
+                Text('Ferramentas de IA', style: Theme.of(context).textTheme.titleSmall),
               ],
             ),
             const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade200,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Máximo: ${widget.speech.maxMainPoints} pontos principais',
-              style: Theme.of(context).textTheme.bodySmall,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isGenerating ? null : _generateManuscript,
+                    icon: const Icon(Icons.description, size: 18),
+                    label: const Text('Manuscrito'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {}, // TODO: Implementar generateGuide
+                    icon: const Icon(Icons.menu_book, size: 18),
+                    label: const Text('Gerar Guia'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildOriginalOutlineToggle() {
+    return Card(
+      child: ExpansionTile(
+        title: const Text('Esboço Original'),
+        subtitle: const Text('Cole aqui o texto do esboço oficial'),
+        leading: const Icon(Icons.list_alt, color: Colors.blue),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _originalOutlineController,
+              maxLines: 8,
+              decoration: const InputDecoration(
+                hintText: 'Digite ou cole o esboço...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManuscriptToggle() {
+    return Card(
+      child: ExpansionTile(
+        title: const Text('Manuscrito Completo'),
+        subtitle: const Text('O que você realmente vai falar (L.E.I.A.)'),
+        leading: const Icon(Icons.edit_note, color: AppTheme.secondaryColor),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _initialCommentController,
+                  decoration: const InputDecoration(labelText: 'Comentário Inicial', border: OutlineInputBorder()),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _completeManuscriptController,
+                  maxLines: 15,
+                  decoration: const InputDecoration(
+                    hintText: 'Escreva seu manuscrito completo aqui...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _finalCommentController,
+                  decoration: const InputDecoration(labelText: 'Comentário Final', border: OutlineInputBorder()),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- REUSED SECTIONS FROM ORIGINAL CODE ---
 
   Widget _buildIntroductionSection() {
     return Card(
@@ -184,51 +327,16 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.play_arrow, color: Colors.blue),
-                ),
+                const Icon(Icons.play_arrow, color: Colors.blue),
                 const SizedBox(width: 12),
-                Text(
-                  'Introdução',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const Spacer(),
-                Text(
-                  widget.speech.type == SpeechType.student10min
-                      ? '~1 min'
-                      : '~3 min',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text('Introdução', style: Theme.of(context).textTheme.titleMedium),
               ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Dica: Desperte interesse imediato com uma pergunta instigante ou cenário real.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _introController,
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Escreva sua introdução aqui...',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(hintText: 'Resumo da introdução...', border: OutlineInputBorder()),
             ),
           ],
         ),
@@ -240,127 +348,34 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'Pontos Principais',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _pointControllers.length > widget.speech.maxMainPoints
-                    ? AppTheme.errorColor
-                    : AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${_pointControllers.length}/${widget.speech.maxMainPoints}',
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+        Text('Esboço Local (Por Cards)', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
         if (_pointControllers.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey.shade300,
-                style: BorderStyle.solid,
-              ),
-            ),
-            child: Column(
-              children: [
-                Icon(Icons.add_circle_outline,
-                    size: 48, color: Colors.grey.shade400),
-                const SizedBox(height: 12),
-                Text(
-                  'Adicione pontos principais',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          )
+          const Text('Nenhum card adicionado.')
         else
-          ReorderableListView.builder(
+          ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _pointControllers.length,
-            onReorder: (oldIndex, newIndex) {
-              setState(() {
-                if (newIndex > oldIndex) newIndex--;
-                final item = _pointControllers.removeAt(oldIndex);
-                _pointControllers.insert(newIndex, item);
-              });
-            },
-            itemBuilder: (context, index) {
-              return _buildMainPointCard(index, key: ValueKey(index));
-            },
+            itemBuilder: (context, index) => _buildMainPointCard(index),
           ),
       ],
     );
   }
 
-  Widget _buildMainPointCard(int index, {Key? key}) {
+  Widget _buildMainPointCard(int index) {
     final controllers = _pointControllers[index];
     return Card(
-      key: key,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       child: ExpansionTile(
-        leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryColor,
-          foregroundColor: Colors.white,
-          child: Text('${index + 1}'),
-        ),
-        title: TextField(
-          controller: controllers.titleController,
-          decoration: const InputDecoration(
-            hintText: 'Título do ponto',
-            border: InputBorder.none,
-          ),
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.errorColor),
-              onPressed: () => _removeMainPoint(index),
-            ),
-            const Icon(Icons.drag_handle),
-          ],
-        ),
+        title: Text('Ponto ${index + 1}: ${controllers.titleController.text}'),
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                  controller: controllers.contentController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Desenvolvimento',
-                    hintText: 'Desenvolva o argumento...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: controllers.illustrationController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Ilustração',
-                    hintText: 'Adicione uma ilustração ou exemplo...',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lightbulb_outline),
-                  ),
-                ),
+                TextField(controller: controllers.titleController, decoration: const InputDecoration(labelText: 'Título')),
+                TextField(controller: controllers.contentController, decoration: const InputDecoration(labelText: 'Desenvolvimento'), maxLines: 2),
               ],
             ),
           ),
@@ -378,51 +393,16 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.flag, color: AppTheme.accentColor),
-                ),
+                const Icon(Icons.flag, color: AppTheme.accentColor),
                 const SizedBox(width: 12),
-                Text(
-                  'Conclusão',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const Spacer(),
-                Text(
-                  widget.speech.type == SpeechType.student10min
-                      ? '~1 min'
-                      : '~3 min',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text('Conclusão', style: Theme.of(context).textTheme.titleMedium),
               ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.accentColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Dica: Resuma os pontos principais e indique claramente o que a assistência deve fazer.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _conclusionController,
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Escreva sua conclusão aqui...',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(hintText: 'Resumo da conclusão...', border: OutlineInputBorder()),
             ),
           ],
         ),
@@ -432,134 +412,21 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
 
   Widget _buildBiblicalTextsSection() {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child:
-                      const Icon(Icons.menu_book, color: AppTheme.secondaryColor),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Textos Bíblicos (Método L.E.I.A.)',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.secondaryColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Para cada texto bíblico:',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildLeiaItem('L', 'Leia - Leitura exata do texto'),
-                  _buildLeiaItem('E', 'Explique - Esclareça o sentido'),
-                  _buildLeiaItem('I', 'Ilustre - Use uma analogia'),
-                  _buildLeiaItem('A', 'Aplique - Mostre o valor prático'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: _addBiblicalText,
-              icon: const Icon(Icons.add),
-              label: const Text('Adicionar Texto Bíblico'),
-            ),
-            if (_outline.biblicalTexts.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ...List.generate(_outline.biblicalTexts.length, (index) {
-                final text = _outline.biblicalTexts[index];
-                return ListTile(
-                  leading: const Icon(Icons.book),
-                  title: Text(text.reference),
-                  subtitle: Text(
-                    text.isLeiaComplete
-                        ? 'L.E.I.A. completo'
-                        : 'L.E.I.A. incompleto',
-                    style: TextStyle(
-                      color: text.isLeiaComplete
-                          ? AppTheme.successColor
-                          : AppTheme.warningColor,
-                    ),
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _editBiblicalText(index),
-                  ),
-                );
-              }),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLeiaItem(String letter, String description) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: AppTheme.secondaryColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: Text(
-                letter,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(description, style: Theme.of(context).textTheme.bodySmall),
-        ],
+      child: ListTile(
+        leading: const Icon(Icons.book, color: AppTheme.secondaryColor),
+        title: const Text('Textos Bíblicos (Métricas)'),
+        subtitle: Text('${_outline.biblicalTexts.length} textos registrados'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          // TODO: Link to a dedicated biblical text management screen if needed
+        },
       ),
     );
   }
 
   void _addMainPoint() {
-    if (_pointControllers.length >= widget.speech.maxMainPoints) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Máximo de ${widget.speech.maxMainPoints} pontos atingido'),
-          backgroundColor: AppTheme.warningColor,
-        ),
-      );
-      return;
-    }
-
     setState(() {
-      _pointControllers.add(_MainPointControllers(
-        MainPoint(id: _uuid.v4(), title: ''),
-      ));
+      _pointControllers.add(_MainPointControllers(MainPoint(id: _uuid.v4(), title: '')));
     });
   }
 
@@ -569,300 +436,31 @@ class _OutlineEditorScreenState extends State<OutlineEditorScreen> {
       _pointControllers.removeAt(index);
     });
   }
-
-  void _addBiblicalText() {
-    final referenceController = TextEditingController();
-    final readController = TextEditingController();
-    final explainController = TextEditingController();
-    final illustrateController = TextEditingController();
-    final applyController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 24,
-            right: 24,
-            top: 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Adicionar Texto Bíblico',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: referenceController,
-                  decoration: const InputDecoration(
-                    labelText: 'Referência',
-                    hintText: 'Ex: João 3:16',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: readController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'L - Leitura',
-                    hintText: 'Texto a ser lido...',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: explainController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'E - Explicação',
-                    hintText: 'Sentido e contexto...',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: illustrateController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'I - Ilustração',
-                    hintText: 'Analogia ou exemplo...',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: applyController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'A - Aplicação',
-                    hintText: 'Valor prático para a vida...',
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (referenceController.text.isEmpty) return;
-
-                      final newText = BiblicalText(
-                        id: _uuid.v4(),
-                        reference: referenceController.text,
-                        read: readController.text,
-                        explain: explainController.text,
-                        illustrate: illustrateController.text,
-                        apply: applyController.text,
-                      );
-
-                      setState(() {
-                        _outline = _outline.copyWith(
-                          biblicalTexts: [..._outline.biblicalTexts, newText],
-                        );
-                      });
-
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Adicionar'),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _editBiblicalText(int index) {
-    final text = _outline.biblicalTexts[index];
-    final referenceController = TextEditingController(text: text.reference);
-    final readController = TextEditingController(text: text.read);
-    final explainController = TextEditingController(text: text.explain);
-    final illustrateController = TextEditingController(text: text.illustrate);
-    final applyController = TextEditingController(text: text.apply);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 24,
-            right: 24,
-            top: 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Editar Texto Bíblico',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: referenceController,
-                  decoration: const InputDecoration(labelText: 'Referência'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: readController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'L - Leitura'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: explainController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'E - Explicação'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: illustrateController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'I - Ilustração'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: applyController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'A - Aplicação'),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            final texts =
-                                List<BiblicalText>.from(_outline.biblicalTexts);
-                            texts.removeAt(index);
-                            _outline = _outline.copyWith(biblicalTexts: texts);
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.errorColor,
-                        ),
-                        child: const Text('Remover'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final updated = text.copyWith(
-                            reference: referenceController.text,
-                            read: readController.text,
-                            explain: explainController.text,
-                            illustrate: illustrateController.text,
-                            apply: applyController.text,
-                          );
-
-                          setState(() {
-                            final texts =
-                                List<BiblicalText>.from(_outline.biblicalTexts);
-                            texts[index] = updated;
-                            _outline = _outline.copyWith(biblicalTexts: texts);
-                          });
-
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Salvar'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  double _calculateProgress() {
-    int total = 3;
-    int filled = 0;
-    if (_introController.text.isNotEmpty) filled++;
-    if (_pointControllers.isNotEmpty) filled++;
-    if (_conclusionController.text.isNotEmpty) filled++;
-    return filled / total;
-  }
-
-  Future<void> _saveOutline() async {
-    final mainPoints = _pointControllers.map((c) {
-      return MainPoint(
-        id: c.point.id,
-        title: c.titleController.text,
-        content: c.contentController.text,
-        illustrations: c.illustrationController.text.isNotEmpty
-            ? [c.illustrationController.text]
-            : [],
-      );
-    }).toList();
-
-    final updatedOutline = _outline.copyWith(
-      introduction: _introController.text,
-      mainPoints: mainPoints,
-      conclusion: _conclusionController.text,
-    );
-
-    final provider = context.read<SpeechProvider>();
-    await provider.updateOutline(widget.speech.id, updatedOutline);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Esboço salvo com sucesso!'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
-      Navigator.of(context).pop();
-    }
-  }
-
-  @override
-  void dispose() {
-    _introController.dispose();
-    _conclusionController.dispose();
-    for (final c in _pointControllers) {
-      c.dispose();
-    }
-    super.dispose();
-  }
 }
 
 class _MainPointControllers {
   final MainPoint point;
-  final TextEditingController titleController;
-  final TextEditingController contentController;
-  final TextEditingController illustrationController;
+  late final TextEditingController titleController;
+  late final TextEditingController contentController;
+  late final TextEditingController illustrationController;
 
-  _MainPointControllers(this.point)
-      : titleController = TextEditingController(text: point.title),
-        contentController = TextEditingController(text: point.content),
-        illustrationController = TextEditingController(
-          text: point.illustrations.isNotEmpty ? point.illustrations.first : '',
-        );
+  _MainPointControllers(this.point) {
+    titleController = TextEditingController(text: point.title);
+    contentController = TextEditingController(text: point.content);
+    illustrationController = TextEditingController(text: point.illustration ?? '');
+  }
 
   void dispose() {
     titleController.dispose();
     contentController.dispose();
     illustrationController.dispose();
+  }
+
+  MainPoint toMainPoint() {
+    return point.copyWith(
+      title: titleController.text,
+      content: contentController.text,
+      illustration: illustrationController.text,
+    );
   }
 }

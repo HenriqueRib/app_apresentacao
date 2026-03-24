@@ -29,11 +29,16 @@ class _ImprovementDashboardScreenState
           final executed = provider.speeches
               .where((s) => s.status == SpeechStatus.executed)
               .toList();
+          final focusedSpeech = widget.initialSpeech ?? provider.currentSpeech;
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               _buildOverviewCard(stats),
+              if (focusedSpeech != null) ...[
+                const SizedBox(height: 24),
+                _buildFocusedSpeechNotesCard(focusedSpeech),
+              ],
               const SizedBox(height: 24),
               _buildCompetenciesCard(),
               const SizedBox(height: 24),
@@ -103,6 +108,63 @@ class _ImprovementDashboardScreenState
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFocusedSpeechNotesCard(Speech speech) {
+    final hasFeedback = speech.feedbackRecord != null;
+    final notesPreview = hasFeedback && speech.feedbackRecord!.lessonsLearned.isNotEmpty
+        ? speech.feedbackRecord!.lessonsLearned
+        : 'Nenhuma observação registrada ainda.';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Aprimorar Discurso em Foco',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              speech.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Objetivo: ${speech.centralObjective}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                notesPreview,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: () => _showQuickNotesDialog(speech),
+                icon: const Icon(Icons.edit_note),
+                label: Text(hasFeedback ? 'Editar Observações' : 'Adicionar Observações'),
               ),
             ),
           ],
@@ -367,6 +429,98 @@ class _ImprovementDashboardScreenState
               },
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showQuickNotesDialog(Speech speech) {
+    final notesController = TextEditingController(
+      text: speech.feedbackRecord?.lessonsLearned ?? '',
+    );
+    final improvementsController = TextEditingController(
+      text: speech.feedbackRecord?.improvements.join('\n') ?? '',
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Observações: ${speech.title}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notesController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Lições aprendidas',
+                    hintText: 'O que funcionou e o que ajustar no próximo discurso?',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: improvementsController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Pontos de melhoria (um por linha)',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final current = speech.feedbackRecord;
+                      final feedback = FeedbackRecord(
+                        competencyRatings: current?.competencyRatings ?? const {},
+                        strengths: current?.strengths ?? const [],
+                        improvements: improvementsController.text
+                            .split('\n')
+                            .map((s) => s.trim())
+                            .where((s) => s.isNotEmpty)
+                            .toList(),
+                        lessonsLearned: notesController.text.trim(),
+                        objectiveAchieved: current?.objectiveAchieved ?? false,
+                        audienceEngagement: current?.audienceEngagement ?? 0,
+                      );
+
+                      final provider = context.read<SpeechProvider>();
+                      await provider.addFeedback(speech.id, feedback);
+
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Observações salvas com sucesso!'),
+                            backgroundColor: AppTheme.successColor,
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Salvar Observações'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
         );
       },
     );

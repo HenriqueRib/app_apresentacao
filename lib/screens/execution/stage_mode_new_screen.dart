@@ -33,41 +33,79 @@ class _StageModeNewScreenState extends State<StageModeNewScreen> {
 
   void _initSections() {
     _sections = [];
-    final outline = widget.speech.outline;
-    if (outline == null) return;
 
-    if (outline.introduction.isNotEmpty) {
+    // 1. Initial Comment
+    if (widget.speech.initialComment.isNotEmpty) {
       _sections.add(_OutlineSection(
-        title: 'Introdução',
-        content: outline.introduction,
+        title: 'Comentário Inicial',
+        content: widget.speech.initialComment,
         type: _SectionType.intro,
-        durationHint: widget.speech.type == SpeechType.student10min ? 60 : 180,
+        durationHint: 60,
       ));
     }
 
-    for (int i = 0; i < outline.mainPoints.length; i++) {
-      final point = outline.mainPoints[i];
-      _sections.add(_OutlineSection(
-        title: 'Ponto ${i + 1}: ${point.title}',
-        content: point.content,
-        type: _SectionType.main,
-        illustrations: point.illustrations,
-        characteristicId: point.characteristicTag,
-        durationHint: widget.speech.type == SpeechType.student10min
-            ? 150
-            : 300,
-      ));
+    // 2. Complete Manuscript (Split by paragraphs for better scrolling)
+    if (widget.speech.completeManuscript.isNotEmpty) {
+      final paragraphs = widget.speech.completeManuscript
+          .split('\n')
+          .where((p) => p.trim().isNotEmpty)
+          .toList();
+      
+      for (int i = 0; i < paragraphs.length; i++) {
+        _sections.add(_OutlineSection(
+          title: 'Manuscrito (Parte ${i + 1})',
+          content: paragraphs[i],
+          type: _SectionType.main,
+          durationHint: (widget.speech.durationMinutes * 60) ~/ paragraphs.length,
+        ));
+      }
     }
 
-    if (outline.conclusion.isNotEmpty) {
+    // 3. Official Outline Cards (If available and no manuscript, or as reference)
+    final outline = widget.speech.outline;
+    if (outline != null && widget.speech.completeManuscript.isEmpty) {
+      if (outline.introduction.isNotEmpty) {
+        _sections.add(_OutlineSection(
+          title: 'Introdução',
+          content: outline.introduction,
+          type: _SectionType.intro,
+          durationHint: widget.speech.type == SpeechType.student10min ? 60 : 180,
+        ));
+      }
+
+      for (int i = 0; i < outline.mainPoints.length; i++) {
+        final point = outline.mainPoints[i];
+        _sections.add(_OutlineSection(
+          title: 'Ponto ${i + 1}: ${point.title}',
+          content: point.content,
+          type: _SectionType.main,
+          illustrations: point.illustrations,
+          characteristicId: point.characteristicTag,
+          durationHint: widget.speech.type == SpeechType.student10min ? 150 : 300,
+        ));
+      }
+
+      if (outline.conclusion.isNotEmpty) {
+        _sections.add(_OutlineSection(
+          title: 'Conclusão',
+          content: outline.conclusion,
+          type: _SectionType.conclusion,
+          durationHint: widget.speech.type == SpeechType.student10min ? 60 : 180,
+        ));
+      }
+    }
+
+    // 4. Final Comment
+    if (widget.speech.finalComment.isNotEmpty) {
       _sections.add(_OutlineSection(
-        title: 'Conclusão',
-        content: outline.conclusion,
+        title: 'Comentário Final',
+        content: widget.speech.finalComment,
         type: _SectionType.conclusion,
-        durationHint: widget.speech.type == SpeechType.student10min ? 60 : 180,
+        durationHint: 60,
       ));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -22,7 +22,12 @@ enum SpeechStatus {
 @immutable
 class Speech {
   final String id;
+  final int? backendId;
   final String title;
+  final String theme;
+  final DateTime? date;
+  final String number;
+  final String song;
   final SpeechType type;
   final SpeechGoalType goalType;
   final String centralObjective;
@@ -35,10 +40,21 @@ class Speech {
   final SpeechStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String originalOutline;
+  final String completeManuscript;
+  final String initialComment;
+  final String finalComment;
+  final String sourceMaterials;
+  final Map<String, dynamic>? guide;
 
   const Speech({
     required this.id,
+    this.backendId,
     required this.title,
+    this.theme = '',
+    this.date,
+    this.number = '',
+    this.song = '',
     required this.type,
     required this.goalType,
     required this.centralObjective,
@@ -51,6 +67,12 @@ class Speech {
     this.status = SpeechStatus.planning,
     required this.createdAt,
     required this.updatedAt,
+    this.originalOutline = '',
+    this.completeManuscript = '',
+    this.initialComment = '',
+    this.finalComment = '',
+    this.sourceMaterials = '',
+    this.guide,
   });
 
   int get durationMinutes => type == SpeechType.student10min ? 10 : 30;
@@ -59,7 +81,12 @@ class Speech {
 
   Speech copyWith({
     String? id,
+    int? backendId,
     String? title,
+    String? theme,
+    DateTime? date,
+    String? number,
+    String? song,
     SpeechType? type,
     SpeechGoalType? goalType,
     String? centralObjective,
@@ -72,10 +99,21 @@ class Speech {
     SpeechStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? originalOutline,
+    String? completeManuscript,
+    String? initialComment,
+    String? finalComment,
+    String? sourceMaterials,
+    Map<String, dynamic>? guide,
   }) {
     return Speech(
       id: id ?? this.id,
+      backendId: backendId ?? this.backendId,
       title: title ?? this.title,
+      theme: theme ?? this.theme,
+      date: date ?? this.date,
+      number: number ?? this.number,
+      song: song ?? this.song,
       type: type ?? this.type,
       goalType: goalType ?? this.goalType,
       centralObjective: centralObjective ?? this.centralObjective,
@@ -88,13 +126,24 @@ class Speech {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      originalOutline: originalOutline ?? this.originalOutline,
+      completeManuscript: completeManuscript ?? this.completeManuscript,
+      initialComment: initialComment ?? this.initialComment,
+      finalComment: finalComment ?? this.finalComment,
+      sourceMaterials: sourceMaterials ?? this.sourceMaterials,
+      guide: guide ?? this.guide,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'backendId': backendId,
       'title': title,
+      'theme': theme,
+      'date': date?.toIso8601String(),
+      'number': number,
+      'song': song,
       'type': type.index,
       'goalType': goalType.index,
       'centralObjective': centralObjective,
@@ -107,16 +156,27 @@ class Speech {
       'status': status.index,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'originalOutline': originalOutline,
+      'completeManuscript': completeManuscript,
+      'initialComment': initialComment,
+      'finalComment': finalComment,
+      'sourceMaterials': sourceMaterials,
+      'guide': guide,
     };
   }
 
   factory Speech.fromJson(Map<String, dynamic> json) {
     return Speech(
       id: json['id'],
+      backendId: json['backendId'],
       title: json['title'],
-      type: SpeechType.values[json['type']],
-      goalType: SpeechGoalType.values[json['goalType']],
-      centralObjective: json['centralObjective'],
+      theme: json['theme'] ?? '',
+      date: json['date'] != null ? DateTime.parse(json['date']) : null,
+      number: json['number'] ?? '',
+      song: json['song'] ?? '',
+      type: SpeechType.values[json['type'] ?? 0],
+      goalType: SpeechGoalType.values[json['goalType'] ?? 0],
+      centralObjective: json['centralObjective'] ?? '',
       audienceAnalysis: json['audienceAnalysis'] != null
           ? AudienceAnalysis.fromJson(json['audienceAnalysis'])
           : null,
@@ -133,12 +193,19 @@ class Speech {
           ? FeedbackRecord.fromJson(json['feedbackRecord'])
           : null,
       focusCharacteristicId: json['focusCharacteristicId'],
-      status: SpeechStatus.values[json['status']],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      status: SpeechStatus.values[json['status'] ?? 0],
+      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      originalOutline: json['originalOutline'] ?? '',
+      completeManuscript: json['completeManuscript'] ?? '',
+      initialComment: json['initialComment'] ?? '',
+      finalComment: json['finalComment'] ?? '',
+      sourceMaterials: json['sourceMaterials'] ?? '',
+      guide: json['guide'] as Map<String, dynamic>?,
     );
   }
 }
+
 
 @immutable
 class AudienceAnalysis {
@@ -256,6 +323,7 @@ class MainPoint {
   final String content;
   final List<String> arguments;
   final List<String> illustrations;
+  final String? illustration;
   final int? characteristicTag;
 
   const MainPoint({
@@ -264,6 +332,7 @@ class MainPoint {
     this.content = '',
     this.arguments = const [],
     this.illustrations = const [],
+    this.illustration,
     this.characteristicTag,
   });
 
@@ -274,6 +343,7 @@ class MainPoint {
       'content': content,
       'arguments': arguments,
       'illustrations': illustrations,
+      'illustration': illustration,
       'characteristicTag': characteristicTag,
     };
   }
@@ -285,6 +355,7 @@ class MainPoint {
       content: json['content'] ?? '',
       arguments: List<String>.from(json['arguments'] ?? []),
       illustrations: List<String>.from(json['illustrations'] ?? []),
+      illustration: json['illustration'],
       characteristicTag: json['characteristicTag'],
     );
   }
@@ -295,6 +366,7 @@ class MainPoint {
     String? content,
     List<String>? arguments,
     List<String>? illustrations,
+    String? illustration,
     int? characteristicTag,
   }) {
     return MainPoint(
@@ -303,6 +375,7 @@ class MainPoint {
       content: content ?? this.content,
       arguments: arguments ?? this.arguments,
       illustrations: illustrations ?? this.illustrations,
+      illustration: illustration ?? this.illustration,
       characteristicTag: characteristicTag ?? this.characteristicTag,
     );
   }

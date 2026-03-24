@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/speech.dart';
+import '../services/api_service.dart';
 import '../services/storage_service.dart';
 
 class SpeechProvider extends ChangeNotifier {
@@ -31,8 +32,67 @@ class SpeechProvider extends ChangeNotifier {
     final storage = await StorageService.getInstance();
     _speeches = await storage.getSpeeches();
 
+    await _syncBackendSpeeches(storage);
+
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> _syncBackendSpeeches(StorageService storage) async {
+    try {
+      final apiService = ApiService();
+      final history = await apiService.getSpeechHistory();
+      debugPrint('Sync: ${history.length} discursos encontrados no backend');
+
+      for (final backendSpeech in history) {
+        try {
+          final details = await apiService.getSpeechDetails(backendSpeech.id);
+        final localIndex = _speeches.indexWhere(
+          (speech) => speech.backendId == backendSpeech.id,
+        );
+
+        final createdAt = details.createdAt ?? DateTime.now();
+        if (localIndex == -1) {
+          final newSpeech = Speech(
+            id: _uuid.v4(),
+            backendId: details.id,
+            title: details.tema.isNotEmpty ? details.tema : 'Discurso ${details.id}',
+            type: SpeechType.public30min,
+            goalType: SpeechGoalType.helpOthers,
+            centralObjective: details.objetivo,
+            status: SpeechStatus.preparing,
+            createdAt: createdAt,
+            updatedAt: DateTime.now(),
+            originalOutline: details.esbocoOriginal,
+            completeManuscript: details.manuscritoCompleto,
+            initialComment: details.comentarioInicial,
+            finalComment: details.comentarioFinal,
+          );
+          _speeches.add(newSpeech);
+        } else {
+          final current = _speeches[localIndex];
+          _speeches[localIndex] = current.copyWith(
+            title: details.tema.isNotEmpty ? details.tema : current.title,
+            centralObjective:
+                details.objetivo.isNotEmpty ? details.objetivo : current.centralObjective,
+            originalOutline: details.esbocoOriginal,
+            completeManuscript: details.manuscritoCompleto,
+            initialComment: details.comentarioInicial,
+            finalComment: details.comentarioFinal,
+            status: current.status == SpeechStatus.planning
+                ? SpeechStatus.preparing
+                : current.status,
+          );
+        }
+      } catch (e) {
+        debugPrint('Erro ao sincronizar detalhe: $e');
+      }
+    }
+
+      await storage.saveSpeeches(_speeches);
+    } catch (e) {
+      debugPrint('Erro geral na sincronização: $e');
+    }
   }
 
   Future<Speech> createSpeech({

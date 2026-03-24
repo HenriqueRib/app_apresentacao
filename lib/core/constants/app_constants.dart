@@ -39,4 +39,7 @@ class AppConstants {
     'Ambiente organizado',
     'Problemas pessoais isolados',
   ];
+
+  static const String apiBaseUrl = 'http://localhost:8001/api';
 }
+

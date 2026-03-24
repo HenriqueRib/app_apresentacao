@@ -34,7 +34,7 @@ class _TrainingModuleScreenState extends State<TrainingModuleScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -44,8 +44,10 @@ class _TrainingModuleScreenState extends State<TrainingModuleScreen>
         title: const Text('Treinamento'),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           tabs: const [
             Tab(icon: Icon(Icons.timer), text: 'Ensaio'),
+            Tab(icon: Icon(Icons.description), text: 'Manuscrito'),
             Tab(icon: Icon(Icons.checklist), text: 'Checklist'),
             Tab(icon: Icon(Icons.school), text: 'Características'),
           ],
@@ -55,9 +57,86 @@ class _TrainingModuleScreenState extends State<TrainingModuleScreen>
         controller: _tabController,
         children: [
           _buildRehearsalTab(),
+          _buildManuscriptTab(),
           _buildChecklistTab(),
           _buildCharacteristicsTab(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildManuscriptTab() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        if (widget.speech.initialComment.isNotEmpty) ...[
+          _buildSectionHeader('Comentário Inicial'),
+          _buildTextContent(widget.speech.initialComment),
+          const SizedBox(height: 16),
+        ],
+        _buildSectionHeader('Manuscrito Completo'),
+        if (widget.speech.completeManuscript.isEmpty)
+          _buildEmptyContent('Nenhum manuscrito gerado/inserido.')
+        else
+          _buildTextContent(widget.speech.completeManuscript, highlight: true),
+        const SizedBox(height: 16),
+        if (widget.speech.finalComment.isNotEmpty) ...[
+          _buildSectionHeader('Comentário Final'),
+          _buildTextContent(widget.speech.finalComment),
+          const SizedBox(height: 16),
+        ],
+        const Divider(),
+        _buildSectionHeader('Estrutura (Cards)'),
+        if (widget.speech.outline?.mainPoints.isEmpty ?? true)
+          _buildEmptyContent('Nenhum card de estrutura.')
+        else
+          ...widget.speech.outline!.mainPoints.map((p) => Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              title: Text(p.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(p.content),
+            ),
+          )),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildTextContent(String text, {bool highlight = false}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: highlight ? AppTheme.primaryColor.withOpacity(0.05) : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: highlight ? AppTheme.primaryColor.withOpacity(0.2) : Colors.grey.shade200),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              height: 1.6,
+              fontSize: 16,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyContent(String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Text(message, style: TextStyle(color: Colors.grey.shade400, fontStyle: FontStyle.italic)),
       ),
     );
   }
