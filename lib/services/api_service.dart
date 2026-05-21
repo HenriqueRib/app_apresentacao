@@ -266,14 +266,23 @@ class ApiService {
     }
   }
 
-  /// Gera comentários da semana via rota em produção: POST /api/wol/comentarios
+  /// Gera comentários da semana via v1 (com fallback para rota legada /wol).
   Future<int> generateWeeklyComments() async {
     try {
-      final response = await ApiHttpHelper.post(
-        ApiRoutes.wolComentariosGerar,
+      var response = await ApiHttpHelper.post(
+        ApiRoutes.comentariosGerar,
         body: jsonEncode({}),
         timeout: _requestTimeout,
       );
+
+      // Fallback: se v1 retornar 404, tentar rota legada WOL
+      if (response.statusCode == 404) {
+        response = await ApiHttpHelper.post(
+          ApiRoutes.wolComentariosGerar,
+          body: jsonEncode({}),
+          timeout: _requestTimeout,
+        );
+      }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final decoded = jsonDecode(response.body);
