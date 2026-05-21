@@ -79,6 +79,10 @@ class Speech {
 
   int get maxMainPoints => type == SpeechType.student10min ? 3 : 5;
 
+  /// Retorna o `tipo` no formato esperado pela API `/avaliar/esboco`.
+  String get apiTipo =>
+      type == SpeechType.student10min ? 'parte_10min' : 'discurso_publico';
+
   Speech copyWith({
     String? id,
     int? backendId,
@@ -277,6 +281,31 @@ class SpeechOutline {
     };
   }
 
+  /// Converte para o formato esperado pela API `POST /avaliar/esboco`.
+  Map<String, dynamic> toApiJson() {
+    return {
+      'introducao': introduction,
+      'pontos_principais': mainPoints.map((p) {
+        final pointBiblicals = biblicalTexts
+            .where((bt) =>
+                p.content.contains(bt.reference) ||
+                p.arguments.any((a) => a.contains(bt.reference)))
+            .toList();
+        return {
+          'titulo': p.title,
+          'ideias': [
+            if (p.content.isNotEmpty) p.content,
+            ...p.arguments,
+          ],
+          'textos_biblicos':
+              pointBiblicals.map((bt) => bt.toApiJson()).toList(),
+          'ilustracoes': p.illustrations,
+        };
+      }).toList(),
+      'conclusao': conclusion,
+    };
+  }
+
   factory SpeechOutline.fromJson(Map<String, dynamic> json) {
     return SpeechOutline(
       introduction: json['introduction'] ?? '',
@@ -413,6 +442,17 @@ class BiblicalText {
       'explain': explain,
       'illustrate': illustrate,
       'apply': apply,
+    };
+  }
+
+  /// Formato LEIA para `POST /avaliar/esboco` — campos em português.
+  Map<String, dynamic> toApiJson() {
+    return {
+      'referencia': reference,
+      'ler': read,
+      'explicar': explain,
+      'ilustrar': illustrate,
+      'aplicar': apply,
     };
   }
 

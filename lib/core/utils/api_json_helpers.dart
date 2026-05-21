@@ -1,5 +1,74 @@
 import 'dart:convert';
 
+/// Resultado normalizado de qualquer resposta da API.
+///
+/// O backend pode retornar:
+///   - `{ "data": { ... } }` (envelope Laravel — preferido em rotas novas)
+///   - `{ "success": true, "content": "..." }` (legado)
+///   - Objeto direto (ex.: manuscrito JSON)
+///
+/// O Flutter normaliza para `{ success, content }` via [unwrapEnvelope].
+class ApiEnvelope {
+  final bool success;
+  final dynamic content;
+  final String? message;
+
+  const ApiEnvelope({required this.success, this.content, this.message});
+}
+
+/// Normaliza qualquer formato de resposta do backend para [ApiEnvelope].
+ApiEnvelope unwrapEnvelope(dynamic decoded) {
+  if (decoded == null) {
+    return const ApiEnvelope(success: false, message: 'Resposta vazia');
+  }
+
+  if (decoded is! Map) {
+    return ApiEnvelope(success: true, content: decoded);
+  }
+
+  final map = Map<String, dynamic>.from(decoded);
+
+  // Formato Laravel preferido: { "data": ... }
+  if (map.containsKey('data')) {
+    return ApiEnvelope(success: true, content: map['data']);
+  }
+
+  // Formato legado: { "success": bool, "content": ... }
+  if (map.containsKey('success')) {
+    final ok = map['success'] == true;
+    return ApiEnvelope(
+      success: ok,
+      content: map['content'] ?? map['data'],
+      message: ok ? null : (map['error'] ?? map['message'])?.toString(),
+    );
+  }
+
+  // Erro explícito
+  if (map.containsKey('error') || map.containsKey('message')) {
+    final hasError = map.containsKey('error');
+    return ApiEnvelope(
+      success: !hasError,
+      content: map,
+      message: (map['error'] ?? map['message'])?.toString(),
+    );
+  }
+
+  // Objeto direto (não tem wrapper)
+  return ApiEnvelope(success: true, content: map);
+}
+
+/// Atalho: extrai o campo `data` de uma resposta ou retorna o objeto raiz.
+Map<String, dynamic> unwrapData(dynamic decoded) {
+  final envelope = unwrapEnvelope(decoded);
+  if (envelope.content is Map) {
+    return Map<String, dynamic>.from(envelope.content as Map);
+  }
+  if (decoded is Map) {
+    return Map<String, dynamic>.from(decoded);
+  }
+  return {};
+}
+
 /// Extrai lista de objetos de respostas Laravel com formatos variados.
 List<Map<String, dynamic>> extractJsonList(dynamic decoded, {List<String> listKeys = const []}) {
   if (decoded == null) return [];
