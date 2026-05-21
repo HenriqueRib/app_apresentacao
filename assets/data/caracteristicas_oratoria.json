@@ -1,0 +1,513 @@
+{
+  "metadata": {
+    "book_version": "be-T, Edition 2014",
+    "language": "pt-BR",
+    "total_characteristics": 53,
+    "source": "Beneficie-se da Escola do Ministério Teocrático"
+  },
+  "categories": [
+    {
+      "id": "cat_1",
+      "name": "Entrega, Dicção e Qualidade Vocal",
+      "characteristics_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 24, 27, 28, 29]
+    },
+    {
+      "id": "cat_2",
+      "name": "Expressão, Contato e Aparência",
+      "characteristics_ids": [10, 11, 12, 13, 14, 15, 16, 17, 30, 31]
+    },
+    {
+      "id": "cat_3",
+      "name": "Argumentação, Lógica e Persuasão",
+      "characteristics_ids": [26, 32, 33, 34, 35, 40, 41, 48, 49, 50, 52]
+    },
+    {
+      "id": "cat_4",
+      "name": "Uso da Bíblia e Técnicas de Ensino",
+      "characteristics_ids": [18, 19, 20, 21, 22, 23, 42, 44, 45, 46, 47, 53]
+    },
+    {
+      "id": "cat_5",
+      "name": "Estrutura e Gestão de Matéria",
+      "characteristics_ids": [25, 36, 37, 38, 39, 43, 51]
+    }
+  ],
+  "characteristics": [
+    {
+      "id": 1,
+      "title": "Leitura exata",
+      "page_reference": 83,
+      "category": "Leitura Pública",
+      "action": "Visualize o cenário e os personagens descritos no texto para dar vida à leitura. Pesquise palavras desconhecidas e pratique em voz alta para evitar omissões que alterem o sentido da mensagem.",
+      "importance": "A exatidão reflete respeito pela Palavra de Deus e permite que a assistência se beneficie do ensino puro de Jeová (Isa. 48:17)."
+    },
+    {
+      "id": 2,
+      "title": "Articulação clara",
+      "page_reference": 86,
+      "category": "Qualidade da Voz",
+      "action": "Medite na importância de cada pensamento e pronuncie as sílabas de forma distinta. Abra a boca o suficiente para que os sons saiam livres, evitando fundir termos ou omitir terminações.",
+      "importance": "Uma articulação nítida garante que a instrução divina seja compreendida sem esforço, honrando o objetivo de tocar o coração."
+    },
+    {
+      "id": 3,
+      "title": "Pronúncia correta",
+      "page_reference": 89,
+      "category": "Qualidade da Voz",
+      "action": "Pesquise termos difíceis ou nomes bíblicos utilizando ferramentas como o Watchtower Library ou gravações da organização. Ensaie o texto até que a leitura flua sem hesitações técnicas.",
+      "importance": "A pronúncia correta demonstra que o instrutor valoriza o ensino teocrático e evita distrações que impeçam o ouvinte de tirar proveito da matéria."
+    },
+    {
+      "id": 4,
+      "title": "Fluência",
+      "page_reference": 93,
+      "category": "Qualidade da Voz",
+      "action": "Visualize a sequência lógica das ideias e pratique a leitura até agrupar as palavras de acordo com o sentido. Evite tropeços ou pausas indevidas que quebrem o ritmo da comunicação.",
+      "importance": "A fluência mantém a atenção no valor prático da mensagem, permitindo que o louvor a Jeová flua de maneira natural e atraente."
+    },
+    {
+      "id": 5,
+      "title": "Uso correto de pausas",
+      "page_reference": 97,
+      "category": "Qualidade da Voz",
+      "action": "Medite nos pontos de transição e utilize pausas para dar ênfase ou permitir que a assistência processe verdades profundas. Utilize o silêncio estratégico para destacar mudanças de ideia.",
+      "importance": "Pausas bem distribuídas dão clareza à instrução e dão tempo para que as promessas de Deus toquem o íntimo do ouvinte."
+    },
+    {
+      "id": 6,
+      "title": "Ênfase segundo o sentido",
+      "page_reference": 101,
+      "category": "Qualidade da Voz",
+      "action": "Pesquise quais palavras carregam o significado central da sentença e destaque-as através da modulação. Certifique-se de que a ênfase transmita exatamente o que o escritor bíblico pretendia.",
+      "importance": "Destacar os termos certos impede mal-entendidos e exalta o propósito de Jeová contido nas Escrituras."
+    },
+    {
+      "id": 7,
+      "title": "Ênfase nas ideias principais",
+      "page_reference": 105,
+      "category": "Qualidade da Voz",
+      "action": "Organize seu esboço de modo que os argumentos secundários sempre apontem para os pontos centrais. Ao proferir, use pausas ou volume para que as verdades vitais sobressaiam.",
+      "importance": "Ajuda a assistência a discernir o caminho em que deve andar, cumprindo o objetivo de Isaías 48:17 de tirar pleno proveito do estudo."
+    },
+    {
+      "id": 8,
+      "title": "Volume apropriado",
+      "page_reference": 107,
+      "category": "Qualidade da Voz",
+      "action": "Visualize o espaço físico e a assistência para ajustar a intensidade da voz. Esteja atento às reações dos ouvintes, garantindo que mesmo os mais distantes ouçam com clareza.",
+      "importance": "O volume adequado demonstra consideração amorosa e assegura que ninguém perca a instrução vital para sua salvação."
+    },
+    {
+      "id": 9,
+      "title": "Modulação",
+      "page_reference": 111,
+      "category": "Qualidade da Voz",
+      "action": "Varie o tom, o volume e o ritmo para refletir as emoções da matéria e evitar a monotonia. Medite no sentimento do texto para que as mudanças vocais soem naturais e sinceras.",
+      "importance": "A modulação mantém o interesse vivo e torna a mensagem de Jeová mais persuasiva e agradável ao coração."
+    },
+    {
+      "id": 10,
+      "title": "Entusiasmo",
+      "page_reference": 115,
+      "category": "Sentimento",
+      "action": "Prepare o coração antes do proferimento e fale com vivacidade sobre as promessas de Deus. Deixe que sua convicção pessoal transpareça na voz, mostrando a urgência da mensagem.",
+      "importance": "O entusiasmo motiva os ouvintes a agir em harmonia com o que aprendem, resultando em benefícios espirituais duradouros."
+    },
+    {
+      "id": 11,
+      "title": "Cordialidade e sentimento",
+      "page_reference": 118,
+      "category": "Sentimento",
+      "action": "Reflita no rosto e no tom de voz o amor que Jeová sente pela humanidade. Trate os assuntos com ternura, visualizando como a mensagem pode consolar quem escuta.",
+      "importance": "Imita as qualidades de Deus e remove barreiras, permitindo que a verdade bíblica seja recebida num coração receptivo."
+    },
+    {
+      "id": 12,
+      "title": "Gestos e expressões faciais",
+      "page_reference": 121,
+      "category": "Expressão Corporal",
+      "action": "Use movimentos naturais para enfatizar pontos ou descrever cenas bíblicas. Certifique-se de que sua expressão facial esteja em total harmonia com o que você está dizendo.",
+      "importance": "Dá vida à comunicação e transmite sinceridade, ajudando o ouvinte a visualizar a aplicação prática da fé."
+    },
+    {
+      "id": 13,
+      "title": "Contato visual",
+      "page_reference": 124,
+      "category": "Expressão Corporal",
+      "action": "Olhe diretamente para as pessoas, distribuindo a atenção de forma equilibrada pela assistência. Em conversas pessoais, mantenha o foco no interlocutor para demonstrar respeito.",
+      "importance": "Estabelece uma conexão pessoal e mostra que o orador está genuinamente interessado no progresso espiritual de cada indivíduo."
+    },
+    {
+      "id": 14,
+      "title": "Naturalidade",
+      "page_reference": 128,
+      "category": "Proferimento",
+      "action": "Fale com a assistência como se estivesse conversando com um amigo, mantendo a dignidade ministerial. Evite tons artificiais ou pomposos que criem distância.",
+      "importance": "A naturalidade gera confiança e torna o ensino mais acessível, permitindo que a sabedoria divina seja o foco central."
+    },
+    {
+      "id": 15,
+      "title": "Boa aparência",
+      "page_reference": 131,
+      "category": "Aparência",
+      "action": "Escolha vestimentas limpas e modestas que condigam com um ministro de Jeová. Certifique-se de que nada em sua aparência desvie a atenção da mensagem que está sendo pregada.",
+      "importance": "Honra a Jeová e contribui para a dignidade da Escola do Ministério, refletindo ordem e respeito pela santidade do ensino."
+    },
+    {
+      "id": 16,
+      "title": "Equilíbrio",
+      "page_reference": 135,
+      "category": "Postura",
+      "action": "Mantenha uma postura relaxada e ereta, controlando movimentos nervosos. Prepare-se profundamente para que a calma venha da confiança no apoio do espírito santo.",
+      "importance": "Transmite serenidade e autoridade espiritual, ajudando a assistência a se concentrar inteiramente na instrução recebida."
+    },
+    {
+      "id": 17,
+      "title": "Uso do microfone",
+      "page_reference": 139,
+      "category": "Técnica",
+      "action": "Mantenha a distância correta do aparelho e fale diretamente para ele. Tome cuidado para que os movimentos de cabeça não causem oscilações no volume captado.",
+      "importance": "O uso eficaz da tecnologia garante que o sacrifício de louvor seja ouvido com nitidez por todos os presentes."
+    },
+    {
+      "id": 18,
+      "title": "Uso da Bíblia ao responder a perguntas",
+      "page_reference": 143,
+      "category": "Uso da Bíblia",
+      "action": "Pesquise na Bíblia a fundamentação para cada resposta, abrindo o texto e lendo-o diretamente. Mostre que a autoridade da resposta provém do Criador, e não de ideias próprias.",
+      "importance": "Exalta as Escrituras como fonte suprema de sabedoria e ensina o estudante a buscar o proveito nas leis de Jeová."
+    },
+    {
+      "id": 19,
+      "title": "Incentivo ao uso da Bíblia",
+      "page_reference": 145,
+      "category": "Uso da Bíblia",
+      "action": "Convide a assistência a acompanhar a leitura, mencionando claramente o capítulo e o versículo. Dê tempo para que todos localizem a passagem em suas próprias Bíblias.",
+      "importance": "Treina os ouvintes a usar a Palavra de Deus de forma independente, fortalecendo sua fé pessoal e discernimento espiritual."
+    },
+    {
+      "id": 20,
+      "title": "Introdução eficaz de textos bíblicos",
+      "page_reference": 147,
+      "category": "Uso da Bíblia",
+      "action": "Antes de ler, apresente o contexto ou levante uma questão que o texto responderá de modo lógico. Prepare a mente do ouvinte para que ele entenda a relevância da leitura.",
+      "importance": "Garante que o texto bíblico seja o clímax do argumento, tornando o ensino mais profundo e fácil de memorizar."
+    },
+    {
+      "id": 21,
+      "title": "Leitura de textos com ênfase adequada",
+      "page_reference": 150,
+      "category": "Uso da Bíblia",
+      "action": "Ao ler o versículo, destaque as palavras que provam o ponto que você está discutindo. Evite uma leitura monótona; deixe que a voz aponte a solução bíblica para o assunto.",
+      "importance": "Ajuda a assistência a perceber a aplicação direta da Palavra de Deus em suas vidas, promovendo o benefício espiritual."
+    },
+    {
+      "id": 22,
+      "title": "Aplicação correta dos textos",
+      "page_reference": 153,
+      "category": "Uso da Bíblia",
+      "action": "Explique a ligação lógica entre o texto lido e o seu argumento, evitando interpretações forçadas. Certifique-se de que a aplicação respeite o contexto original da Bíblia.",
+      "importance": "Demonstra honestidade intelectual e respeito pela verdade, edificando a confiança do ouvinte na instrução divina."
+    },
+    {
+      "id": 23,
+      "title": "Esclarecer o valor prático da matéria",
+      "page_reference": 157,
+      "category": "Aplicação",
+      "action": "Mostre claramente como a informação pode ser usada para tomar decisões ou resolver problemas. Responda à necessidade do ouvinte de saber como aquilo o beneficia pessoalmente.",
+      "importance": "O ensino teocrático visa a transformação de vida; destacar o valor prático cumpre o propósito de Isaías 48:17."
+    },
+    {
+      "id": 24,
+      "title": "Escolha de palavras",
+      "page_reference": 160,
+      "category": "Linguagem",
+      "action": "Use termos simples e vigorosos que a assistência compreenda sem dificuldade. Evite jargões complexos que possam obscurecer a clareza das verdades bíblicas.",
+      "importance": "Uma linguagem clara remove obstáculos ao aprendizado e torna a mensagem de Deus atraente para pessoas de todos os níveis."
+    },
+    {
+      "id": 25,
+      "title": "Uso de esboço",
+      "page_reference": 166,
+      "category": "Estrutura",
+      "action": "Prepare um roteiro com pontos principais e textos-chave em vez de um texto manuscrito. Use o esboço para manter a sequência lógica enquanto fala de maneira espontânea.",
+      "importance": "Permite maior contato visual e naturalidade, tornando a comunicação mais direta e o ensino mais eficaz."
+    },
+    {
+      "id": 26,
+      "title": "Apresentação lógica da matéria",
+      "page_reference": 170,
+      "category": "Estrutura",
+      "action": "Organize as ideias em uma sequência natural, como causa e efeito ou problema e solução. Cada ponto deve construir o fundamento necessário para o próximo.",
+      "importance": "A lógica facilita o acompanhamento do raciocínio e ajuda o ouvinte a aceitar e memorizar a instrução espiritual."
+    },
+    {
+      "id": 27,
+      "title": "Proferimento espontâneo",
+      "page_reference": 174,
+      "category": "Proferimento",
+      "action": "Fale com base nas ideias do esboço, confiando na sua preparação prévia e na ajuda do espírito santo. Evite ler notas extensas, preferindo uma expressão sincera e livre.",
+      "importance": "O proferimento espontâneo transmite convicção e permite que o orador se adapte às reações da assistência com sensibilidade."
+    },
+    {
+      "id": 28,
+      "title": "Estilo conversante",
+      "page_reference": 179,
+      "category": "Proferimento",
+      "action": "Use um tom amigável que lembre uma conversa pessoal, mesmo estando em uma tribuna. Evite discursos oratórios pomposos, focando na comunicação direta de coração a coração.",
+      "importance": "Torna a mensagem menos intimidadora e mais acolhedora, facilitando a abertura dos ouvintes para os conselhos de Deus."
+    },
+    {
+      "id": 29,
+      "title": "Qualidade da voz",
+      "page_reference": 181,
+      "category": "Qualidade da Voz",
+      "action": "Trabalhe na postura e na respiração para produzir um som firme e agradável. Evite vícios de fala que possam cansar o ouvinte ou desviar a atenção do conteúdo espiritual.",
+      "importance": "Uma voz bem cuidada é um instrumento eficaz para louvar a Jeová e transmitir a verdade com a dignidade que ela merece."
+    },
+    {
+      "id": 30,
+      "title": "Mostrar interesse nos outros",
+      "page_reference": 186,
+      "category": "Relacionamento",
+      "action": "Interaja com a assistência antes e depois da reunião e adapte seus exemplos às necessidades reais das pessoas. Mostre, por suas palavras, que você deseja o bem-estar deles.",
+      "importance": "Reflete o amor cristão e torna o ensino mais relevante para a vida pessoal de cada estudante."
+    },
+    {
+      "id": 31,
+      "title": "Respeito pelos outros",
+      "page_reference": 190,
+      "category": "Relacionamento",
+      "action": "Use uma linguagem bondosa e evite tons que possam humilhar ou ofender. Reconheça a dignidade dos ouvintes, tratando assuntos sensíveis com a devida consideração cristã.",
+      "importance": "O respeito ganha a confiança da assistência e honra os princípios de Jeová sobre o tratamento digno ao próximo."
+    },
+    {
+      "id": 32,
+      "title": "Falar com convicção",
+      "page_reference": 194,
+      "category": "Persuasão",
+      "action": "Medite na matéria até que você acredite plenamente na sua veracidade e urgência. Deixe que sua certeza interna transpareça na voz e na postura firme.",
+      "importance": "A convicção do orador fortalece a fé dos ouvintes e os encoraja a confiar nas promessas divinas de modo inabalável."
+    },
+    {
+      "id": 33,
+      "title": "Falar com tato, mas de modo firme",
+      "page_reference": 197,
+      "category": "Persuasão",
+      "action": "Apresente orientações bíblicas de forma bondosa, sem diluir os padrões de Jeová. Escolha o momento e os termos certos para aconselhar, visando sempre a edificação.",
+      "importance": "O tato evita oposições desnecessárias, enquanto a firmeza assegura que a verdade de Deus seja transmitida com clareza."
+    },
+    {
+      "id": 34,
+      "title": "Ser edificante e positivo",
+      "page_reference": 202,
+      "category": "Atitude",
+      "action": "Foque nas soluções e nas bênçãos que Jeová provê, em vez de se concentrar apenas em falhas. Termine suas apresentações com uma nota de esperança que incentive a ação correta.",
+      "importance": "Mensagens positivas renovam as forças espirituais e motivam os ouvintes a servir a Deus com alegria e gratidão."
+    },
+    {
+      "id": 35,
+      "title": "Repetição para dar ênfase",
+      "page_reference": 206,
+      "category": "Técnica de Ensino",
+      "action": "Repita termos centrais ou pontos principais ao longo do discurso para fixá-los na mente. Recapitule as ideias principais na conclusão para selar o aprendizado.",
+      "importance": "A repetição é fundamental para que verdades vitais sejam memorizadas e aplicadas no cotidiano dos ouvintes."
+    },
+    {
+      "id": 36,
+      "title": "Desenvolvimento do tema",
+      "page_reference": 209,
+      "category": "Estrutura",
+      "action": "Mantenha todas as partes da apresentação ligadas estritamente à ideia central escolhida. Descarte informações, mesmo que interessantes, que não contribuam para o objetivo do tema.",
+      "importance": "Um tema bem desenvolvido dá unidade ao discurso e garante que a assistência saia com uma mensagem clara e proveitosa."
+    },
+    {
+      "id": 37,
+      "title": "Destacar os pontos principais",
+      "page_reference": 212,
+      "category": "Estrutura",
+      "action": "Enuncie suas ideias centrais com frases curtas e claras. Certifique-se de que os pontos principais se sobressaiam nitidamente acima dos detalhes e das ilustrações.",
+      "importance": "Facilita a retenção da matéria e assegura que os conceitos básicos para o progresso espiritual sejam lembrados."
+    },
+    {
+      "id": 38,
+      "title": "Introdução que desperta interesse",
+      "page_reference": 215,
+      "category": "Estrutura",
+      "action": "Comece com uma pergunta instigante ou um cenário real que mostre a relevância da matéria. Mostre imediatamente como o assunto beneficiará a vida dos presentes.",
+      "importance": "Uma introdução eficaz prende a atenção e prepara o coração para receber a instrução de Jeová com entusiasmo."
+    },
+    {
+      "id": 39,
+      "title": "Conclusão eficaz",
+      "page_reference": 220,
+      "category": "Estrutura",
+      "action": "Resuma os pontos principais e indique claramente o que a assistência deve fazer com a informação. Use as palavras finais para motivar a aplicação prática e dar senso de encerramento.",
+      "importance": "A conclusão é a oportunidade final de tocar o coração e impulsionar o ouvinte a trilhar o caminho que Deus ensina."
+    },
+    {
+      "id": 40,
+      "title": "Exatidão das declarações",
+      "page_reference": 223,
+      "category": "Credibilidade",
+      "action": "Pesquise e verifique todos os fatos, citações e dados antes de apresentá-los. Certifique-se de que suas afirmações estejam em total harmonia com o entendimento bíblico atual da organização.",
+      "importance": "A exatidão protege a credibilidade do ensino teocrático e evita a disseminação de informações incorretas."
+    },
+    {
+      "id": 41,
+      "title": "Clareza",
+      "page_reference": 226,
+      "category": "Comunicação",
+      "action": "Explique termos complexos e use uma linha de raciocínio simples que todos possam acompanhar. Evite ambiguidades, organizando os pensamentos de forma transparente e direta.",
+      "importance": "A clareza garante que o ensino seja proveitoso para todos os ouvintes, independentemente de sua idade ou formação cultural."
+    },
+    {
+      "id": 42,
+      "title": "Apresentação instrutiva",
+      "page_reference": 230,
+      "category": "Conteúdo",
+      "action": "Pesquise detalhes adicionais que tragam novos ângulos sobre o assunto, evitando apenas o óbvio. Procure fornecer informações que realmente enriqueçam o conhecimento bíblico da assistência.",
+      "importance": "O ensino deve fortalecer o discernimento espiritual e ajudar o povo de Deus a crescer em conhecimento exato."
+    },
+    {
+      "id": 43,
+      "title": "Usar a matéria designada",
+      "page_reference": 234,
+      "category": "Fidelidade",
+      "action": "Atenha-se estritamente ao tema e aos pontos fornecidos pela organização para a parte específica. Não substitua a instrução designada por preferências ou opiniões pessoais.",
+      "importance": "Garante a unidade do ensino mundial e demonstra respeito pelo arranjo do escravo fiel e discreto."
+    },
+    {
+      "id": 44,
+      "title": "Uso eficaz de perguntas",
+      "page_reference": 236,
+      "category": "Técnica de Ensino",
+      "action": "Utilize perguntas para sondar o ponto de vista da assistência ou para ajudá-los a chegar a conclusões lógicas. Use perguntas retóricas para estimular a meditação profunda.",
+      "importance": "Perguntas incentivam a participação mental e ajudam o instrutor a discernir o que realmente está no coração do estudante."
+    },
+    {
+      "id": 45,
+      "title": "Ilustrações instrutivas",
+      "page_reference": 240,
+      "category": "Técnica de Ensino",
+      "action": "Use comparações ou histórias curtas para explicar conceitos espirituais profundos. Certifique-se de que a ilustração seja simples e que o ponto de comparação seja fácil de entender.",
+      "importance": "Ilustrações tornam o ensino memorável e ajudam a transformar ideias abstratas em lições práticas e vivas."
+    },
+    {
+      "id": 46,
+      "title": "Ilustrações baseadas em situações conhecidas",
+      "page_reference": 244,
+      "category": "Técnica de Ensino",
+      "action": "Escolha exemplos que façam parte do cotidiano dos ouvintes, como família, trabalho ou natureza. Evite cenários estranhos à cultura local que possam confundir o raciocínio.",
+      "importance": "Facilita a identificação pessoal com o assunto e ajuda o ouvinte a ver como a Bíblia se aplica à sua própria realidade."
+    },
+    {
+      "id": 47,
+      "title": "Uso eficaz de recursos visuais",
+      "page_reference": 247,
+      "category": "Recursos",
+      "action": "Utilize gravuras, mapas ou objetos que todos possam ver nitidamente. Use o recurso apenas para destacar um ponto crucial da instrução, e não para mera distração.",
+      "importance": "Recursos visuais estimulam os sentidos e ajudam a fixar informações complexas de maneira rápida e duradoura."
+    },
+    {
+      "id": 48,
+      "title": "Argumentação que estimula o raciocínio",
+      "page_reference": 251,
+      "category": "Persuasão",
+      "action": "Apresente provas e fatos de uma maneira que leve o ouvinte a concluir o assunto por conta própria. Evite ser dogmático; prefira explicar os motivos bíblicos por trás de cada princípio.",
+      "importance": "Treina os cristãos a usar suas próprias faculdades mentais e a ter uma fé baseada em conhecimento e lógica."
+    },
+    {
+      "id": 49,
+      "title": "Argumentos convincentes",
+      "page_reference": 255,
+      "category": "Persuasão",
+      "action": "Use evidências sólidas da Palavra de Deus e, se apropriado, dados científicos ou históricos confiáveis para apoiar suas afirmações. Certifique-se de que sua linha de prova seja inabalável.",
+      "importance": "Fortalece a confiança dos ouvintes na veracidade da mensagem e os prepara para defender sua fé com base em fatos."
+    },
+    {
+      "id": 50,
+      "title": "Tocar o coração",
+      "page_reference": 258,
+      "category": "Impacto",
+      "action": "Medite nos valores envolvidos na matéria e mostre como o amor de Jeová deve motivar nossas ações. Incentive os ouvintes a analisar suas próprias motivações íntimas.",
+      "importance": "O objetivo final do ensino é a adoração que nasce de um coração grato e motivado pelo amor a Deus."
+    },
+    {
+      "id": 51,
+      "title": "Controle e boa distribuição do tempo",
+      "page_reference": 263,
+      "category": "Gestão",
+      "action": "Cronometre cada seção durante o ensaio para não se estender em pontos secundários. Certifique-se de dedicar tempo suficiente para a conclusão e a aplicação prática.",
+      "importance": "O respeito ao tempo demonstra organização e consideração amorosa pelos ouvintes e pelos demais participantes do programa."
+    },
+    {
+      "id": 52,
+      "title": "Exortação eficaz",
+      "page_reference": 265,
+      "category": "Motivação",
+      "action": "Incentive a assistência a agir com base no amor e na fé em Jeová, usando palavras encorajadoras. Evite usar culpa ou pressão externa para motivar o progresso espiritual.",
+      "importance": "A exortação correta impulsiona o crescimento cristão e a aplicação prática da verdade de maneira voluntária e alegre."
+    },
+    {
+      "id": 53,
+      "title": "Encorajar e fortalecer os ouvintes",
+      "page_reference": 268,
+      "category": "Conclusão",
+      "action": "Use passagens bíblicas que destaquem o apoio contínuo que Jeová dá aos seus servos. Mostre que, com a força de Deus, é possível superar qualquer desafio e manter a integridade.",
+      "importance": "Deixa a assistência renovada e confiante, pronta para enfrentar as pressões do dia a dia com a paz de Jeová."
+    }
+  ],
+  "competencies_feedback": [
+    {
+      "id": "comp_1",
+      "name": "Comunicação e Relacionamento",
+      "weight": 89.0,
+      "description": "Capacidade de se comunicar de forma clara e estabelecer conexões com a audiência."
+    },
+    {
+      "id": "comp_2",
+      "name": "Trabalho em Equipe",
+      "weight": 86.9,
+      "description": "Habilidade de colaborar e trabalhar junto com outros oradores e participantes."
+    },
+    {
+      "id": "comp_3",
+      "name": "Capacidade de Resolver Problemas",
+      "weight": 84.3,
+      "description": "Aptidão para lidar com imprevistos e adaptar a apresentação conforme necessário."
+    },
+    {
+      "id": "comp_4",
+      "name": "Ética e Integridade Pessoal",
+      "weight": 86.2,
+      "description": "Coerência entre o discurso apresentado e a conduta pessoal do orador."
+    },
+    {
+      "id": "comp_5",
+      "name": "Ética Profissional",
+      "weight": 74.5,
+      "description": "Respeito pelos padrões e protocolos estabelecidos para apresentações."
+    }
+  ],
+  "shinyashiki_pillars": [
+    {
+      "id": "P01",
+      "name": "Ética e Integridade",
+      "description": "Coerência entre discurso e prática; base para credibilidade duradoura.",
+      "kpi_reference": "86.2%"
+    },
+    {
+      "id": "P02",
+      "name": "Qualidade Premium",
+      "description": "Garantia de que o conteúdo ou produto entregue é superior à concorrência.",
+      "kpi_reference": "Produto_Premium"
+    },
+    {
+      "id": "P03",
+      "name": "Benefício ao Ouvinte",
+      "description": "Foco total nos anseios da plateia e não nos interesses do orador.",
+      "kpi_reference": "Foco_No_Outro"
+    }
+  ]
+}

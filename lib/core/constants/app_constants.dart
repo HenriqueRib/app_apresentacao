@@ -39,4 +39,8 @@ class AppConstants {
     'Ambiente organizado',
     'Problemas pessoais isolados',
   ];
+
+  // static const String apiBaseUrl = 'http://localhost:8001/api';
+  static const String apiBaseUrl = 'https://codeline43.com.br/api';
 }
+

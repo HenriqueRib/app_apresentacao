@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/storage_service.dart';
-import '../home_screen.dart';
+import '../home_screen_new.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,31 +16,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingPage> _pages = [
     const OnboardingPage(
-      title: 'Bem-vindo ao\nPalestrante de Sucesso',
+      title: 'Bem-vindo ao\nPoder de Convencer',
       description:
-          'Transforme sua comunicação em missão. Aprenda a provocar ação imediata na sua audiência.',
-      icon: Icons.mic,
+          'Método Shinyashiki + 53 Características de Oratória do livro be-T para transformar você em um orador de excelência.',
+      icon: Icons.record_voice_over,
       color: AppTheme.primaryColor,
     ),
     const OnboardingPage(
-      title: 'Planeje com Propósito',
+      title: 'Ciclo de 5 Passos',
       description:
-          'Defina seu KPI de sucesso antes de criar. O sucesso não é medido por aplausos, mas por objetivos realizados.',
-      icon: Icons.track_changes,
+          'Planejar, Preparar, Treinar, Executar e Aprimorar. Um método completo para desenvolver sua oratória.',
+      icon: Icons.loop,
       color: AppTheme.secondaryColor,
     ),
     const OnboardingPage(
-      title: 'Arquitetura da Mensagem',
+      title: '53 Características',
       description:
-          'Estruture sua apresentação com os 8 elementos fundamentais do Método Shinyashiki.',
-      icon: Icons.architecture,
+          'Acesso completo às características de oratória do livro be-T com ações práticas e explicações detalhadas.',
+      icon: Icons.menu_book,
       color: AppTheme.accentColor,
     ),
     const OnboardingPage(
-      title: 'Treine e Execute',
+      title: 'Método L.E.I.A.',
       description:
-          'Ensaie com o simulador de plateia, use o Modo Palco e acompanhe suas métricas de sucesso.',
-      icon: Icons.trending_up,
+          'Leia, Explique, Ilustre e Aplique. Aprenda a estruturar seus discursos de forma profunda e memorável.',
+      icon: Icons.auto_stories,
       color: AppTheme.primaryColor,
     ),
   ];
@@ -66,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const HomeScreenNew()),
       );
     }
   }
@@ -148,43 +148,61 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(OnboardingPage page) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: page.color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Adapt spacing and sizing dynamically if the screen height is restricted (e.g. landscape or small devices)
+        final double availableHeight = constraints.maxHeight;
+        final double spacingFactor = availableHeight < 400 ? 0.5 : 1.0;
+        final double iconSize = availableHeight < 400 ? 80 : 120;
+        final double iconSymbolSize = availableHeight < 400 ? 44 : 64;
+
+        return Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: iconSize,
+                    height: iconSize,
+                    decoration: BoxDecoration(
+                      color: page.color.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      page.icon,
+                      size: iconSymbolSize,
+                      color: page.color,
+                    ),
+                  ),
+                  SizedBox(height: 40 * spacingFactor),
+                  Text(
+                    page.title,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: availableHeight < 400 ? 20 : 28,
+                        ),
+                  ),
+                  SizedBox(height: 16 * spacingFactor),
+                  Text(
+                    page.description,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppTheme.textSecondary,
+                          height: 1.5,
+                          fontSize: availableHeight < 400 ? 14 : 16,
+                        ),
+                  ),
+                ],
+              ),
             ),
-            child: Icon(
-              page.icon,
-              size: 64,
-              color: page.color,
-            ),
           ),
-          const SizedBox(height: 48),
-          Text(
-            page.title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            page.description,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textSecondary,
-                  height: 1.5,
-                ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

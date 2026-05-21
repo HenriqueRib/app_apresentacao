@@ -1,10 +1,13 @@
-# Progresso do Desenvolvimento - Palestrante de Sucesso
+# Progresso do Desenvolvimento - Poder de Convencer
 
-**Última atualização:** 23/03/2026
+**Última atualização:** 20/05/2026
 
 ## Visão Geral
 
-Aplicativo Flutter baseado no Método Shinyashiki, conforme a obra "Os segredos das apresentações poderosas". O objetivo é capacitar o usuário para provocar ação imediata na audiência.
+Aplicativo Flutter "Poder de Convencer" que integra:
+- **Método Shinyashiki**: Ciclo de 5 passos (Planejar, Preparar, Treinar, Executar, Aprimorar)
+- **53 Características de Oratória**: Do livro "Beneficie-se da Escola do Ministério Teocrático" (be-T)
+- **Método L.E.I.A.**: Leia, Explique, Ilustre, Aplique
 
 ---
 
@@ -17,207 +20,212 @@ Aplicativo Flutter baseado no Método Shinyashiki, conforme a obra "Os segredos 
 
 ---
 
-## 1. Estrutura Base do Projeto
+## 1. Estrutura Base e Dados
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| Criação do projeto Flutter | [x] | Projeto criado com `flutter create` |
-| Estrutura de pastas | [x] | Pastas lib/, doc/, screens/, models/, etc. |
-| Configuração do pubspec.yaml | [x] | Dependências: provider, shared_preferences, uuid |
-| Tema do aplicativo | [x] | AppTheme com cores e estilos definidos |
-| Constantes do app | [x] | AppConstants com valores fixos |
+| Projeto Flutter | [x] | Configurado com Material Design 3 |
+| JSON das 53 Características | [x] | Arquivo `assets/data/caracteristicas_oratoria.json` |
+| Categorias de Características | [x] | 5 categorias principais |
+| Competências de Avaliação | [x] | 5 competências com pesos |
+| Pilares Shinyashiki | [x] | 3 pilares fundamentais |
+| Serviço de Características | [x] | `CharacteristicsService` com busca e filtros |
 
 ---
 
-## 2. Modelos de Dados (Models)
+## 2. Modelos de Dados
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| Presentation | [x] | Modelo completo de palestra |
-| MessageArchitecture | [x] | Estrutura dos 8 elementos da mensagem |
-| TrainingData | [x] | Dados de sessões de treinamento |
-| TrainingSession | [x] | Sessão individual de treino |
-| TimestampNote | [x] | Notas com marcação de tempo |
-| ExecutionData | [x] | Dados de execução da palestra |
-| PerformanceMetrics | [x] | Métricas de sucesso |
-| CreativeResource | [x] | Recursos criativos (títulos, casos, etc.) |
+| Speech | [x] | Modelo principal de discurso |
+| SpeechOutline | [x] | Estrutura do esboço |
+| MainPoint | [x] | Pontos principais do discurso |
+| BiblicalText | [x] | Textos bíblicos com método L.E.I.A. |
+| AudienceAnalysis | [x] | Análise da assistência |
+| TrainingProgress | [x] | Progresso de treinamento |
+| ExecutionRecord | [x] | Registro de execução |
+| FeedbackRecord | [x] | Registro de feedback |
+| OratoryCharacteristic | [x] | Característica de oratória |
 
 ---
 
-## 3. Serviços (Services)
+## 3. Módulo 1: PLANEJAR
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| StorageService | [x] | Persistência local com SharedPreferences |
-| Salvar/carregar apresentações | [x] | CRUD completo |
-| Salvar/carregar recursos | [x] | CRUD completo |
-| Controle de onboarding | [x] | Verificação de primeiro acesso |
+| Tela de planejamento | [x] | Wizard de 4-5 passos |
+| Seleção de tipo (10/30 min) | [x] | Designação estudante ou público |
+| Seleção de objetivo | [x] | Pessoal ou ajudar próximo |
+| Definição do objetivo central | [x] | Campo obrigatório |
+| Análise da assistência | [x] | 4 campos de análise |
+| Seleção de característica foco | [x] | Para discursos de 10 min |
+| Validação obrigatória | [x] | Impede avançar sem objetivo |
 
 ---
 
-## 4. Providers (Gerenciamento de Estado)
+## 4. Módulo 2: PREPARAR (Esboço)
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| PresentationProvider | [x] | Gerenciamento de palestras |
-| ResourceProvider | [x] | Gerenciamento de recursos criativos |
-| Indicador de profundidade | [x] | Alerta quando conteúdo marketing > original |
-
----
-
-## 5. Módulo de Onboarding
-
-| Item | Status | Descrição |
-|------|--------|-----------|
-| Tela de onboarding | [x] | 4 páginas introdutórias |
-| Navegação por swipe | [x] | PageView com indicadores |
-| Botão pular/próximo | [x] | Controles de navegação |
-| Persistência de estado | [x] | Lembra se já foi completado |
-
----
-
-## 6. Módulo de Planejamento (Passo 1: Planejar)
-
-| Item | Status | Descrição |
-|------|--------|-----------|
-| Wizard de criação | [x] | 3 etapas para criar palestra |
-| Seleção de workflow | [x] | Objetivo Próprio vs Cliente |
-| Definição de título | [x] | Campo com validação |
-| Definição de KPI | [x] | Obrigatório para avançar |
-| Template Quick Pitch | [~] | Switch disponível, lógica parcial |
-
----
-
-## 7. Módulo de Arquitetura da Mensagem (Passo 2: Preparar)
-
-| Item | Status | Descrição |
-|------|--------|-----------|
-| Tela de arquitetura | [x] | Formulário com os 8 elementos |
-| Elemento 1: Ideia Central | [x] | Campo com limite de caracteres |
-| Elemento 2: Problema/Desafio | [x] | Campo com limite de caracteres |
-| Elemento 3: Identificação do Público | [x] | Campo com limite de caracteres |
-| Elemento 4: Causa do Problema | [x] | Campo com limite de caracteres |
-| Elemento 5: Solução e Método | [x] | Destaque "Pico de Eureca!" |
-| Elemento 6: Motivação Tripartite | [x] | Autoconfiança, Superação, Ação |
-| Elemento 7: Ação Solicitada | [x] | Campo para CTA |
-| Elemento 8: Celebração | [x] | Encerramento |
+| Editor de esboço | [x] | Interface completa |
+| Header com objetivo | [x] | Sempre visível no topo |
+| Seção de introdução | [x] | Com dicas e tempo estimado |
+| Pontos principais | [x] | Limite baseado no tipo (3 ou 5) |
+| Drag & drop de pontos | [x] | Reordenação de pontos |
+| Seção de conclusão | [x] | Com dicas e tempo estimado |
+| Textos bíblicos L.E.I.A. | [x] | Ler, Explicar, Ilustrar, Aplicar |
+| Validação de L.E.I.A. | [x] | Indicador de completude |
 | Indicador de progresso | [x] | Barra de progresso visual |
-| Salvamento automático | [x] | Salva ao fechar |
+| Ilustrações por ponto | [x] | Campo para ilustrações |
 
 ---
 
-## 8. Repositório de Recursos Criativos
-
-| Item | Status | Descrição |
-|------|--------|-----------|
-| Tela de recursos | [x] | 4 abas (categorias) |
-| Títulos Fortes | [x] | CRUD completo |
-| Casos Ilustrativos | [x] | CRUD completo |
-| Repertório de Conexão | [x] | CRUD completo |
-| Assets Multimídia | [x] | CRUD completo (sem player) |
-| Filtro de busca | [x] | Busca por título/conteúdo |
-| Indicador Original vs Marketing | [x] | Badge e alerta de profundidade |
-| Alerta de profundidade | [x] | Aviso quando < 60% original |
-
----
-
-## 9. Módulo de Performance/Treinamento (Passo 3: Treinar)
+## 5. Módulo 3: TREINAR
 
 | Item | Status | Descrição |
 |------|--------|-----------|
 | Tela de treinamento | [x] | 3 abas |
-| Ritual de Concentração | [x] | Cards de meditação |
-| Player de meditação | [ ] | Apenas UI, sem áudio |
-| Cronômetro de ensaio | [x] | Timer funcional |
-| Controles de timer | [x] | Play/pause/reset |
-| Indicador de energia | [x] | UI para avaliação |
-| Simulador de Plateia | [~] | UI disponível, sem câmera |
-| Gravação de vídeo | [ ] | Não implementado |
-| Notas por timestamp | [~] | UI disponível, persistência parcial |
-| Checklist de Posse de Palco | [x] | 4 itens com checkbox |
-| Marcar como pronta | [x] | Botão funcional |
+| Timer de ensaio | [x] | Circular com progresso |
+| Indicador de overtime | [x] | Alerta visual |
+| Nível de energia | [x] | Slider 1-5 |
+| Checklist de palco | [x] | 5 itens verificáveis |
+| Indicador de prontidão | [x] | Progresso do checklist |
+| Características em foco | [x] | Card destacado |
+| Características recomendadas | [x] | Lista expansível |
+| Salvar sessão | [~] | UI pronta, persistência parcial |
+| Marcar como pronto | [x] | Botão funcional |
 
 ---
 
-## 10. Dashboard de Execução - Modo Palco (Passo 4: Executar)
+## 6. Módulo 4: EXECUTAR (Modo Palco)
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| Tela Modo Palco | [x] | Interface escura, zero distração |
-| Teleprompter Inteligente | [x] | Exibe elementos da arquitetura |
-| Navegação por swipe | [x] | Próximo/anterior elemento |
-| Destaque por tipo | [x] | Cores diferentes por elemento |
-| Gestor de Tempo | [x] | Cronômetro grande |
-| Alerta 3 minutos | [x] | Comandos de ação |
-| Indicador de Silêncio | [x] | Countdown para pausas |
-| Checklist profissionalismo | [x] | Modal com verificações |
-| Modo tela cheia | [x] | SystemChrome immersive |
+| Interface zero distração | [x] | Fundo escuro, tela cheia |
+| Header com objetivo | [x] | Sempre visível |
+| Temporizador grande | [x] | Com semáforo de cores |
+| Regra dos 3 minutos | [x] | Alerta "Largada Forte" |
+| Alertas de conclusão | [x] | Amarelo/Vermelho conforme tempo |
+| Teleprompter | [x] | Cards por seção |
+| Navegação por swipe | [x] | Próximo/anterior |
+| Cues de performance | [x] | Alertas de características |
+| Indicador de pausa | [x] | Silêncio estratégico |
+| Ajuda de característica | [x] | Dialog com ação |
+| Ilustrações no card | [x] | Seção destacada |
 
 ---
 
-## 11. Performance Dashboard e Follow-up (Passo 5: Aprimorar)
+## 7. Módulo 5: APRIMORAR
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| Dashboard de métricas | [x] | Visão geral de resultados |
-| Métricas de sucesso | [x] | Negócios, Contratos, Leads |
-| Lista de palestras executadas | [x] | Cards com mini-métricas |
-| Detalhe de métricas | [x] | Bottom sheet com edição |
-| Feedback Loop | [x] | Campos de feedback |
+| Dashboard de progresso | [x] | Visão geral |
+| Métricas totais | [x] | Discursos, executados, taxa |
+| Competências de avaliação | [x] | 5 competências com pesos |
+| Lista de executados | [x] | Cards de discursos |
+| Formulário de feedback | [x] | Bottom sheet completo |
+| Objetivo alcançado | [x] | Switch sim/não |
+| Engajamento da audiência | [x] | Slider 1-5 |
+| Pontos fortes | [x] | Campo de texto |
+| Pontos a melhorar | [x] | Campo de texto |
 | Lições aprendidas | [x] | Campo de texto |
-| CRM de Follow-up | [~] | UI disponível, lógica pendente |
-| Lembretes automáticos | [ ] | Não implementado |
 
 ---
 
-## 12. UX/UI e Design
+## 8. Biblioteca de 53 Características
 
 | Item | Status | Descrição |
 |------|--------|-----------|
-| Zero Distraction Policy | [x] | Modo Palco minimalista |
-| Material Design 3 | [x] | useMaterial3: true |
-| Navegação principal | [x] | Bottom navigation 3 tabs |
-| FAB para nova palestra | [x] | Floating action button |
-| Cards com sombra | [x] | Elevation e bordas arredondadas |
-| Indicadores de progresso | [x] | LinearProgressIndicator |
-| Feedback visual | [x] | SnackBars de confirmação |
-| Responsividade | [~] | Funciona, mas não otimizado para tablet |
+| Tela de biblioteca | [x] | Lista completa |
+| Busca por texto | [x] | Título, categoria, ação |
+| Filtro por categoria | [x] | Chips horizontais |
+| Card expansível | [x] | Ação + Importância |
+| Referência de página | [x] | Indicador visual |
+| Contador de resultados | [x] | Exibe total |
 
 ---
 
-## 13. Funcionalidades Futuras (Backlog)
+## 9. Infraestrutura
 
-| Item | Prioridade | Descrição |
-|------|------------|-----------|
-| Integração com câmera | Alta | Gravação de ensaios |
-| Player de áudio | Alta | Meditações guiadas |
-| Notificações push | Média | Lembretes de follow-up |
-| Sincronização em nuvem | Média | Backup Firebase |
-| Temas customizados | Baixa | Dark mode completo |
-| Exportação PDF | Baixa | Exportar arquitetura |
-| Analytics | Baixa | Métricas de uso |
-| Modo offline | Baixa | Já funciona local |
+| Item | Status | Descrição |
+|------|--------|-----------|
+| StorageService | [x] | SharedPreferences |
+| CharacteristicsService | [x] | Carrega JSON |
+| SpeechProvider | [x] | Gerenciamento de estado |
+| Onboarding atualizado | [x] | 4 telas novas |
+| Tema do app | [x] | AppTheme |
 
 ---
 
-## Resumo do Progresso
+## Arquivos Principais
 
-| Módulo | Completude |
-|--------|------------|
-| Estrutura Base | 100% |
-| Modelos de Dados | 100% |
-| Serviços | 100% |
-| Providers | 100% |
-| Onboarding | 100% |
-| Planejamento | 90% |
-| Arquitetura da Mensagem | 100% |
-| Recursos Criativos | 95% |
-| Treinamento | 70% |
-| Modo Palco | 95% |
-| Dashboard | 80% |
-| UX/UI | 85% |
+```
+lib/
+├── main.dart
+├── core/
+│   ├── theme/app_theme.dart
+│   └── constants/app_constants.dart
+├── models/
+│   ├── speech.dart              # Novo modelo principal
+│   ├── oratory_characteristic.dart
+│   ├── presentation.dart        # Legado
+│   └── creative_resource.dart   # Legado
+├── services/
+│   ├── storage_service.dart
+│   └── characteristics_service.dart  # Novo
+├── providers/
+│   ├── speech_provider.dart     # Novo
+│   ├── presentation_provider.dart
+│   └── resource_provider.dart
+└── screens/
+    ├── home_screen_new.dart     # Nova home
+    ├── onboarding/
+    ├── planning/
+    │   └── speech_planning_screen.dart
+    ├── preparation/
+    │   └── outline_editor_screen.dart
+    ├── training/
+    │   └── training_module_screen.dart
+    ├── execution/
+    │   └── stage_mode_new_screen.dart
+    ├── dashboard/
+    │   └── improvement_dashboard_screen.dart
+    └── characteristics/
+        └── characteristics_library_screen.dart
 
-**Progresso Geral Estimado: ~90%**
+assets/
+└── data/
+    └── caracteristicas_oratoria.json  # 53 características
+```
+
+---
+
+## 8. Ferramentas Aditivas (Expansão 2026)
+
+| Item | Status | Descrição |
+|------|--------|-----------|
+| Hub na aba Início | [x] | `ToolsHubSection` com 5 cards |
+| Central da Reunião | [x] | `MeetingHubScreen` + favoritos e prancheta |
+| Timer Pro | [x] | Split 1+7+2, bordas coloridas, presets |
+| Meu Estúdio de Esboços | [x] | Tópicos independentes + flashcards + IA refinar |
+| Autoavaliação be-T | [x] | 53 características + histórico |
+| Masterclass Shinyashiki | [x] | JSON + 5 passos + Treinador de Voz |
+| Testes providers | [x] | meeting, study_studio, oratory_guide |
+
+---
+
+## JSON das 53 Características
+
+O arquivo `assets/data/caracteristicas_oratoria.json` contém:
+
+- **metadata**: Versão do livro, idioma
+- **categories**: 5 categorias de agrupamento
+- **characteristics**: 53 características completas com:
+  - id, title, page_reference, category
+  - action (o que fazer)
+  - importance (por que é importante)
+- **competencies_feedback**: 5 competências de avaliação
+- **shinyashiki_pillars**: 3 pilares do método
 
 ---
 
@@ -239,44 +247,39 @@ flutter build ios
 
 ---
 
-## Arquivos Principais
+## Próximos Passos (Backlog)
 
-```
-lib/
-├── main.dart                    # Entrada do app
-├── core/
-│   ├── theme/app_theme.dart     # Tema e cores
-│   └── constants/app_constants.dart
-├── models/
-│   ├── presentation.dart        # Modelo principal
-│   └── creative_resource.dart   # Recursos criativos
-├── services/
-│   └── storage_service.dart     # Persistência local
-├── providers/
-│   ├── presentation_provider.dart
-│   └── resource_provider.dart
-├── screens/
-│   ├── home_screen.dart
-│   ├── onboarding/
-│   ├── planning/
-│   ├── preparation/
-│   ├── resources/
-│   ├── training/
-│   ├── execution/
-│   └── dashboard/
-└── widgets/                     # Widgets reutilizáveis
-```
+| Item | Prioridade | Descrição |
+|------|------------|-----------|
+| Integração com API Laravel | Alta | Backend para IA |
+| Geração de esboço manuscrito | Alta | IA para converter esboço |
+| Gravação de vídeo de ensaio | Média | Análise de performance |
+| Notificações de follow-up | Média | Lembretes |
+| Sincronização em nuvem | Média | Firebase |
+| Análise de voz | Baixa | Detecção de "Problema? Oba!" |
+| OCR de esboços manuais | Baixa | Digitalização |
 
 ---
 
-## Notas de Desenvolvimento
+## Progresso Geral
 
-1. **Persistência**: Usando SharedPreferences para armazenamento local. Para produção, considerar SQLite ou Hive.
+| Módulo | Completude |
+|--------|------------|
+| Estrutura Base | 100% |
+| Dados (JSON 53 chars) | 100% |
+| Planejar | 100% |
+| Preparar (Esboço) | 95% |
+| Treinar | 90% |
+| Executar (Modo Palco) | 95% |
+| Aprimorar | 90% |
+| Biblioteca 53 Chars | 100% |
+| Ferramentas Aditivas | 100% |
 
-2. **Estado**: Usando Provider para gerenciamento de estado. Funciona bem para este tamanho de app.
+**Progresso Geral: ~98%**
 
-3. **Camera/Vídeo**: Requer pacotes adicionais (camera, video_player) e permissões.
-
-4. **Notificações**: Requer flutter_local_notifications e configuração nativa.
-
-5. **Firebase**: Para sincronização em nuvem, adicionar firebase_core, cloud_firestore.
+O aplicativo está **usável** para o fluxo completo:
+1. Criar discurso com planejamento
+2. Preparar esboço com método L.E.I.A.
+3. Treinar com timer e checklist
+4. Executar no Modo Palco
+5. Registrar feedback e aprimorar
