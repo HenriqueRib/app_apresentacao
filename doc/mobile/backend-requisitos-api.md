@@ -1,6 +1,9 @@
 # Requisitos de API para o app Flutter
 
-Documento para o **time de backend**: o que existe hoje no painel `/wol` e o que precisa ser exposto em JSON (recomendado: prefixo `/api/v1` + autenticação do app).
+> **Atualizado 21/05/2026:** prioridades e rotas novas (avaliar esboco, aprimorar, S-315) estão no briefing mobile.  
+> **Use como fonte de verdade:** [briefing-backend-ensino.md](./briefing-backend-ensino.md) · [contrato-json-backend-flutter.md](./contrato-json-backend-flutter.md) · [plano-api-ensino.md](./plano-api-ensino.md)
+
+Documento para o **time de backend**: o que existe hoje no painel `/wol` e o que precisa ser exposto em JSON (prefixo `/api/v1`).
 
 ---
 

@@ -1,322 +1,428 @@
-# Contrato JSON — App Flutter × API v1
+# Contrato JSON — Backend Laravel × Flutter (*Poder de Convencer*)
 
-Documento para o time de **backend** alinhar respostas com o que o app mobile já consome em `https://codeline43.com.br/api`.
-
-**Fonte de verdade para URLs em produção:** [ROTAS-PRODUCAO.md](./ROTAS-PRODUCAO.md) — o app **não** usa mais fallback `/api/wol/assentinela/*`.
-
-O app aceita **envelope Laravel** (`{ "data": ... }`) ou **objeto/lista na raiz**, mas os campos abaixo devem existir com os nomes indicados.
+**Versão:** 1.1 (alinhado ao briefing mobile 21/05/2026)  
+**Base URL:** `https://codeline43.com.br/api/v1` (dev: `http://localhost:8001/api/v1`)
 
 ---
 
-## Estado atual do `routes/api.php` (produção)
+## Convenções gerais
 
-Base: `https://codeline43.com.br/api`
+### Headers
 
-| Status | Método | Caminho | Uso no app |
-|--------|--------|---------|------------|
-| ✅ Existe | `GET` | `/v1/discursos` | Lista discursos (funciona — log “9 discursos”) |
-| ✅ Existe | `GET` | `/v1/comentarios/semanal` | Aba Comentários |
-| ✅ Existe | `POST` | `/wol/comentarios` | **Gerar comentários** (não usar `/v1/comentarios/gerar` até existir) |
-| ✅ Existe | `GET` | `/wol/reuniao` | Scraping WOL (opcional) |
-| ❌ 404 | `GET/POST` | `/v1/respostas-geradas` | Respostas — só no painel web hoje |
-| ❌ 404 | `GET` | `/v1/assentinel/estudos` | Sentinela — **cadastrar no Laravel** |
-| ❌ 404 | `GET` | `/v1/assentinel/settings` | Prompts Sentinela |
-| ❌ 404 | `GET` | `/v1/partes` | Partes |
-| ❌ 404 | `GET` | `/v1/discursos/settings` | Prompts discursos |
-
-O prefixo **`/v1` existe**, mas só para **discursos** e **comentarios/semanal**. Os 404 não são “falta de v1” e sim **rotas que ainda não foram adicionadas** ao grupo `Route::prefix('v1')`.
-
-HTTP **404** no app significa “recurso ainda não publicado no backend”, não URL errada do cliente. Ver [ROTAS-PRODUCAO.md](./ROTAS-PRODUCAO.md).
-
-Snippet sugerido para o backend (dentro do `prefix('v1')` existente):
-
-```php
-Route::prefix('respostas-geradas')->group(function () {
-    Route::get('/', [RespostaGeradaController::class, 'index']);
-    Route::post('/', [RespostaGeradaController::class, 'store']);
-    Route::post('/{id}/improve', [RespostaGeradaController::class, 'improve']);
-});
-
-Route::prefix('assentinel')->group(function () {
-    Route::get('estudos', [AssentinelController::class, 'index']);
-    Route::post('estudos', [AssentinelController::class, 'store']);
-    Route::get('settings', [AssentinelController::class, 'getSettings']);
-    Route::put('settings', [AssentinelController::class, 'saveSettings']);
-    // ...
-});
-
-Route::prefix('partes')->group(function () { /* ... */ });
-Route::get('discursos/settings', [DiscursoController::class, 'settings']);
-Route::put('discursos/settings', [DiscursoController::class, 'saveSettings']);
+```http
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {token}
 ```
 
+Timeout recomendado em rotas de IA: **60s**.
+
+### Envelope de resposta
+
+O backend pode retornar qualquer um destes formatos; o **Flutter normaliza**:
+
+| Formato | Exemplo |
+|---------|---------|
+| Laravel `data` | `{ "data": { ... } }` |
+| Legado `success` | `{ "success": true, "content": "..." }` |
+| Objeto direto | Manuscrito JSON em `gerar-manuscrito/total` |
+
+**Recomendação backend (novas rotas):** usar sempre `{ "data": ... }` em sucesso.
+
+### Erros
+
+| HTTP | Body |
+|------|------|
+| `422` | `{ "message": "...", "errors": { "campo": ["..."] } }` |
+| `500` | `{ "success": false, "error": "mensagem amigável" }` ou `{ "message": "..." }` |
+| `401` / `403` | Auth / papel insuficiente (S-315) |
+
+### Modos de saída IA
+
+Parâmetro ou campo `modo` / `tipo_resposta`:
+
+| Valor | Uso |
+|-------|-----|
+| `esboco_topicos` | Tópicos de ideias (be-T) |
+| `manuscrito` | Prosa para leitura |
+| `guia_estudo` | Guia prático (`guide`) |
+| `avaliacao` | Feedback pedagógico (não reescreve texto) |
+
 ---
 
-## Regras gerais
+## Mapeamento de modelos Flutter
 
-| Regra | Detalhe |
-|-------|---------|
-| Content-Type | `application/json` |
-| Listagens | Preferir `{ "data": [ {...}, ... ] }` |
-| Listas vazias | Retornar `[]` em `data`, não omitir a chave |
-| Settings | Objeto plano com chaves string → valor string (não array de `{key,value}` sem documentar) |
-| IDs | Enviar como string ou número; o app normaliza para string nos modelos de ferramentas |
-| Erros | HTTP 4xx/5xx com corpo JSON e mensagem legível |
+| Classe / asset Flutter | Request / response API |
+|------------------------|-------------------------|
+| `Speech` | `discursos` CRUD |
+| `Speech.outline` | `esboco` em `avaliar/esboco` ou campos `esboco_original` |
+| `MainPoint` | `pontos_principais[].titulo`, `ideias[]` |
+| `BiblicalText` | `textos_biblicos[]` com `ler`, `explicar`, `ilustrar`, `aplicar` |
+| Ciclo de Performance | `passo_atual` em `discursos.metadados` ou `estudo/progresso` |
+| `caracteristicas_oratoria.json` | `caracteristicas_be_t[]`, `caracteristica_foco_id`, `aprimorar/feedback` |
+| Assentinel study | `assentinel/estudos` |
+| Comentário reunião | `comentarios/semanal` |
 
 ---
 
-## 1. Central da Reunião — Comentários
+## Status das rotas (matriz)
 
-### GET `/api/v1/comentarios/semanal`
+Legenda: ✅ implementado no repo · 🟡 parcial · ❌ planejado · 🔒 auth obrigatória
 
-**Resposta esperada (200):**
+### Já disponíveis
+
+| Rota | Status | Notas |
+|------|--------|-------|
+| `GET/POST/GET{id}/DELETE /discursos` | ✅ | |
+| `POST /discursos/gerar-manuscrito/total` | ✅ | Não persiste; JSON estruturado |
+| `POST /discursos/sugerir-versiculos` | ✅ | LEIA |
+| `GET /comentarios/semanal` | ✅ | Produção |
+| `GET /comentarios/historico` | ✅ | Produção |
+| `GET/POST/GET{id}/DELETE /assentinel/estudos` | ✅ | Deploy necessário |
+| `POST /assentinel/estudos/{id}/comentario-inicial` | ✅ | |
+| `POST /assentinel/estudos/{id}/comentario-final` | ✅ | |
+| `POST /assentinel/estudos/{id}/resumo` | ✅ | |
+| `GET/PUT /assentinel/settings` | ✅ | |
+
+### Fase A — P0
+
+| Rota | Status |
+|------|--------|
+| CRUD `/partes` + `generate-esboco` + `esboco/improve` + settings | ❌ |
+| `PUT /discursos/{id}` | ❌ |
+| `POST /discursos/{id}/generate-guia` | ❌ |
+| `POST /discursos/{id}/gerar-manuscrito` | ❌ |
+| `POST /discursos/{id}/manuscrito/improve` | ❌ |
+| `GET/PUT /discursos/settings` | ❌ |
+| CRUD `/respostas-geradas` + improve | ❌ |
+| `POST /comentarios/gerar` | ❌ (hoje: `/api/wol/comentarios`) |
+
+### Fase B — P0
+
+| Rota | Status |
+|------|--------|
+| `POST /avaliar/esboco` | ❌ |
+| `POST /avaliar/esboco/ocr` | ❌ P2 |
+
+### Fases C–E
+
+| Rota | Status |
+|------|--------|
+| `POST /estudo/pesquisa`, `meditacao`, `memorizar` | ❌ P1 |
+| `GET /estudo/progresso/{id}` | ❌ P1 |
+| `POST /ensaio/registrar` | ❌ P1 |
+| `GET /ensaio/metas-tempo` | ❌ P1 |
+| `POST /aprimorar/feedback` | ❌ P1 |
+| `POST/GET /avaliacoes-orador` | ❌ P2 🔒 |
+
+---
+
+## POST `/avaliar/esboco`
+
+**Prioridade:** P0 · **Auth:** recomendado 🔒
+
+### Request
 
 ```json
 {
-  "data": {
-    "semana": "2026-W21",
-    "reuniao": {
-      "texto_joia_espiritual": "Provérbios 21",
-      "livro": "Provérbios",
-      "capitulo": 21,
-      "capitulo_texto": "Texto completo do capítulo..."
-    },
-    "comentarios": [
+  "tipo": "parte_10min | discurso_publico | discurso_estudante",
+  "titulo": "string opcional",
+  "objetivo_central": "string",
+  "esboco": {
+    "introducao": "texto ou tópicos",
+    "pontos_principais": [
       {
-        "id": 101,
-        "comentario": "Texto do comentário (~30s)...",
-        "tags": [{ "name": "Conselho" }]
+        "titulo": "Ponto 1",
+        "ideias": ["..."],
+        "textos_biblicos": [
+          {
+            "referencia": "João 3:16",
+            "ler": "...",
+            "explicar": "...",
+            "ilustrar": "...",
+            "aplicar": "..."
+          }
+        ],
+        "ilustracoes": ["..."]
       }
-    ]
-  }
+    ],
+    "conclusao": "texto ou tópicos"
+  },
+  "esboco_texto_livre": "alternativa: esboço corrido ou pós-OCR",
+  "duracao_minutos": 10,
+  "caracteristica_foco_id": 12,
+  "idioma": "pt-BR"
 }
 ```
 
-Alternativa aceita: mesmo objeto **sem** envelope `data`.
+**Validação:** `esboco` **ou** `esboco_texto_livre` obrigatório; `tipo` obrigatório.
 
-| Campo | Obrigatório | Uso no app |
-|-------|-------------|------------|
-| `reuniao.texto_joia_espiritual` | Recomendado | Título na aba Comentários |
-| `reuniao.capitulo_texto` | Para gerar IA | Se vazio, app mostra “Cadastrar texto do capítulo” |
-| `comentarios[].comentario` | Sim | Texto exibido no card |
-| `comentarios[].id` | Recomendado | Melhorar comentário (futuro) |
-| `comentarios[].tags[].name` | Opcional | Chips na lista |
-
-### POST `/api/v1/reuniao/texto`
-
-**Body:**
-
-```json
-{
-  "livro": "Provérbios",
-  "capitulo": 21,
-  "texto": "Texto completo do capítulo"
-}
-```
-
-**Resposta:** `200` ou `201` (corpo opcional).
-
-### POST `/api/v1/comentarios/gerar`
-
-**Body:** vazio `{}` ou sem body.
-
-**Resposta esperada:**
-
-```json
-{
-  "success": true,
-  "generated_count": 3
-}
-```
-
-Após gerar, o app chama novamente `GET .../semanal` para atualizar a lista.
-
-> Se a rota ainda não existir em v1, expor equivalente autenticado ao `POST /api/wol/comentarios` do painel web.
-
----
-
-## 2. A Sentinela (Assentinel)
-
-### GET `/api/v1/assentinel/estudos`
-
-```json
-{
-  "data": [
-    {
-      "id": "42",
-      "conteudo_estudo": "Texto colado...",
-      "comentario_inicial": null,
-      "comentario_final": null,
-      "resumo_comentarios": null,
-      "created_at": "2026-05-01T10:00:00Z",
-      "updated_at": "2026-05-02T12:00:00Z"
-    }
-  ]
-}
-```
-
-Aceito também: lista na raiz `[...]` ou `{ "estudos": [...] }`.
-
-| Campo | Obrigatório |
-|-------|-------------|
-| `id` | Sim |
-| `conteudo_estudo` | Sim |
-| `comentario_inicial`, `comentario_final`, `resumo_comentarios` | Opcional (null se vazio) |
-| `created_at`, `updated_at` | Recomendado (ISO 8601) |
-
-### GET `/api/v1/assentinel/settings`
-
-**Resposta esperada (objeto plano, não aninhado em outro objeto sem ser `data`):**
+### Response `200`
 
 ```json
 {
   "data": {
-    "prompt_inicial": "Instrução para comentário inicial...",
-    "prompt_final": "Instrução para comentário final...",
-    "prompt_resumo": "Instrução para resumo-ponte..."
+    "nota_geral": "A|B|C|NR",
+    "passo_shinyashiki": "preparar",
+    "objetivo_claro": true,
+    "proporcao_tempo": {
+      "introducao_pct": 12,
+      "corpo_pct": 78,
+      "conclusao_pct": 10,
+      "dentro_do_ideal_10min": true,
+      "comentario": "Introdução um pouco longa para parte de 10 min."
+    },
+    "estrutura_bet": {
+      "introducao": { "status": "ok|atencao|falta", "itens": [] },
+      "corpo": { "status": "ok", "transicoes": "ok|atencao", "pontos": [] },
+      "conclusao": { "status": "ok", "chama_acao": true }
+    },
+    "leia": [
+      {
+        "referencia": "João 3:16",
+        "completo": false,
+        "faltando": ["ilustrar"],
+        "sugestao": "..."
+      }
+    ],
+    "pilares_shinyashiki": [
+      { "id": "credibilidade", "nota": "B+", "observacao": "..." },
+      { "id": "empatia", "nota": "B", "observacao": "..." },
+      { "id": "entusiasmo", "nota": "A-", "observacao": "..." }
+    ],
+    "caracteristicas_be_t": [
+      {
+        "id": 7,
+        "titulo": "Ênfase nas ideias principais",
+        "nota": "B",
+        "evidencia": "...",
+        "sugestao": "..."
+      }
+    ],
+    "pontos_fortes": ["..."],
+    "pontos_melhorar": ["..."],
+    "proximos_passos": [
+      "Reescrever introdução em 2 frases",
+      "Completar LEIA no segundo texto"
+    ],
+    "persistido_id": "uuid-opcional"
   }
 }
 ```
 
-Ou na raiz:
+### Integração Flutter
 
-```json
-{
-  "prompt_inicial": "...",
-  "prompt_final": "...",
-  "prompt_resumo": "..."
-}
-```
-
-### PUT `/api/v1/assentinel/settings`
-
-Mesmo body do GET (três chaves acima).
-
-### POST `/api/v1/assentinel/estudos/{id}/comentario-inicial` (e `comentario-final`, `resumo`)
-
-**Resposta:** texto gerado em um destes campos (o app lê todos):
-
-- `content`
-- `comment`
-- `data` (string ou objeto com `content`)
+1. Montar body a partir de `Speech.outline` (`toJson()`).
+2. Exibir `proximos_passos` na tela **Preparar** do Ciclo.
+3. Se `caracteristica_foco_id` veio da tela de foco be-T, enviar no request.
+4. Opcional: salvar `persistido_id` no histórico local.
 
 ---
 
-## 3. Discursos (admin no app)
+## Partes — CRUD e geração
 
-### GET `/api/v1/discursos`
+### POST `/partes`
 
 ```json
 {
-  "data": [
-    {
-      "id": 1,
-      "tema": "Tema",
-      "objetivo": "Objetivo",
-      "created_at": "2026-05-01T10:00:00Z"
-    }
-  ]
+  "tema": "obrigatório",
+  "topicos": [
+    { "descricao": "obrigatório", "texto": "Jo 3:16", "fonte": "opcional" }
+  ],
+  "conteudo_original": "opcional",
+  "duracao_minutos": 10
 }
 ```
 
-### GET `/api/v1/discursos/settings`
+### POST `/partes/{id}/generate-esboco`
 
 ```json
 {
-  "prompt_discurso_geral": "Prompt manuscrito...",
-  "prompt_discurso_guia": "Prompt guia..."
+  "modo": "esboco_topicos | manuscrito"
 }
 ```
 
-Aliases aceitos pelo app: `prompt_geral` → manuscrito, `prompt_guia` → guia.
+**Response:** `{ "data": { "content": "...", "modo": "esboco_topicos" } }` — persistir em `esboco_manuscrito`.
 
-### PUT `/api/v1/discursos/settings`
+### POST `/partes/{id}/esboco/improve`
 
 ```json
 {
-  "prompt_geral": "...",
-  "prompt_guia": "..."
+  "secao": "introducao | ponto_1 | conclusao | texto_completo",
+  "instrucoes": "obrigatório"
 }
 ```
 
 ---
 
-## 4. Partes da reunião
+## Discursos — metadados Ciclo
 
-### GET `/api/v1/partes`
+### PUT `/discursos/{id}` — campo sugerido
 
 ```json
 {
-  "data": [
-    {
-      "id": "7",
-      "tema": "Tema da parte",
-      "topicos": [{ "descricao": "...", "texto": "Jo 1:1", "fonte": "..." }],
-      "esboco_manuscrito": null,
-      "created_at": "...",
-      "updated_at": "..."
-    }
-  ]
+  "metadados": {
+    "passo_atual": "planejar | preparar | treinar | executar | aprimorar",
+    "esboco_validado": false,
+    "ultima_avaliacao_id": "uuid-opcional"
+  }
 }
 ```
 
-### GET `/api/v1/partes/settings`
+Backend: coluna JSON `metadados` em `discursos` (migration) ou reutilizar campo existente se houver.
+
+---
+
+## Ensaio
+
+### POST `/ensaio/registrar`
 
 ```json
 {
-  "prompt_geral": "Instrução global para esboço..."
+  "discurso_id": "1",
+  "parte_id": null,
+  "tipo": "parte | discurso",
+  "duracao_segundos": 612,
+  "meta_minutos": 10,
+  "nivel_energia": 4,
+  "checklist_palco": {
+    "microfone": true,
+    "agua": true
+  },
+  "notas": "texto livre",
+  "audio_url": "opcional"
 }
 ```
 
-Alias aceito: `prompt_parte_geral`.
-
-### PUT `/api/v1/partes/settings`
+### GET `/ensaio/metas-tempo?tipo=parte_10min`
 
 ```json
 {
-  "prompt_geral": "..."
+  "data": {
+    "intro": 1,
+    "corpo": 7,
+    "conclusao": 2,
+    "unidade": "minutos"
+  }
 }
 ```
 
 ---
 
-## 5. Respostas geradas (Central — aba Respostas)
-
-### GET `/api/v1/respostas-geradas`
+## POST `/aprimorar/feedback`
 
 ```json
 {
-  "data": [
-    {
-      "id": "uuid-ou-int",
-      "pergunta": "opcional",
-      "texto_base": "...",
-      "fonte_pesquisa": "w23.01 pág. 5",
-      "prompt_especifico": "Resposta simples e objetiva",
-      "resposta_gerada": "Texto completo...",
-      "created_at": "...",
-      "updated_at": "..."
-    }
-  ]
+  "discurso_id": "1",
+  "parte_id": null,
+  "objetivo_alcancado": true,
+  "engajamento_audiencia": 4,
+  "competencias": [
+    { "id": "clareza", "nota": 4 },
+    { "id": "aplicacao", "nota": 5 }
+  ],
+  "caracteristicas_ids": [7, 14, 22],
+  "pontos_fortes": "...",
+  "pontos_melhorar": "...",
+  "licoes_aprendidas": "..."
+}
+```
+
+**Response:** `{ "data": { "id": 1, "created_at": "..." } }`
+
+---
+
+## Avaliação orador (S-315)
+
+🔒 Requer papel `anciao` ou `avaliador`.
+
+### POST `/avaliacoes-orador`
+
+```json
+{
+  "avaliado": {
+    "nome": "Irmão X",
+    "congregacao": "...",
+    "idioma_avaliacao": "pt-BR",
+    "contato": { "email": "...", "telefone": "..." },
+    "etnia": "opcional",
+    "jw_hub": true
+  },
+  "triagem_bloqueio": {
+    "ideias_sempre_melhores": false,
+    "reputacao_rigido": false,
+    "impoe_suas_ideias": false,
+    "procrastinador": false,
+    "aparencia_desconfortavel": false,
+    "ofensa_assistencia": false,
+    "bloqueado": false
+  },
+  "notas": {
+    "DIS": "A+",
+    "ENT": "B",
+    "INT": "NR"
+  },
+  "observacoes": {
+    "habilidade_orador": "...",
+    "personalidade": "...",
+    "familia": "...",
+    "recomenda_parte_familia": true
+  },
+  "recomendado_ano_anterior": true,
+  "nao_recomendado_motivo": "",
+  "avaliadores_count": 3,
+  "avaliado_ausente_durante_votacao": true
+}
+```
+
+### POST `/avaliacoes-orador/gerar-rascunho-observacoes`
+
+```json
+{
+  "notas": { "DIS": "A+", "ENT": "B", "INT": "NR" },
+  "bullets_avaliador": ["clareza bíblica", "tom bondoso"]
+}
+```
+
+**Response:** rascunhos para itens (9)–(11); avaliador **revisa** antes de salvar.
+
+---
+
+## Respostas geradas (Central da Reunião)
+
+### POST `/respostas-geradas`
+
+```json
+{
+  "pergunta": "opcional",
+  "texto_base": "obrigatório",
+  "fonte_pesquisa": "w23.01 pág. 5 par. 3",
+  "prompt_especifico": "opcional"
+}
+```
+
+### POST `/respostas-geradas/{id}/improve`
+
+```json
+{
+  "instrucao_melhoria": "obrigatório"
 }
 ```
 
 ---
 
-## Checklist para o backend
+## Assentinel — nomes de rotas
 
-- [ ] `GET comentarios/semanal` inclui `reuniao.capitulo_texto` quando o texto já foi salvo
-- [ ] `POST reuniao/texto` e `POST comentarios/gerar` expostos em v1 (autenticados como o web)
-- [ ] `GET assentinel/estudos` retorna **todos** os estudos em `data` (array, mesmo vazio)
-- [ ] `GET assentinel/settings` retorna as 3 chaves `prompt_*` com valores já cadastrados no painel
-- [ ] `GET discursos/settings` e `GET partes/settings` retornam prompts não vazios quando existem no banco
-- [ ] Respostas de geração (comentários, sentinela, partes, discursos) usam `content` ou campo documentado acima
+| Briefing mobile (alias) | Rota canônica no repo |
+|-------------------------|----------------------|
+| `generate-initial` | `comentario-inicial` ✅ usar esta |
+| `generate-final` | `comentario-final` |
+| `generate-summary` | `resumo` |
 
 ---
 
-## Referências no repositório
+## Changelog de contrato
 
-- Requisitos completos: [backend-requisitos-api.md](./backend-requisitos-api.md)
-- UI Comentários: [central-da-reuniao.md](./central-da-reuniao.md)
-- UI Sentinela: [assentinel.md](./assentinel.md)
-- Código de parse: `lib/core/utils/api_json_helpers.dart`
+| Data | Alteração |
+|------|-----------|
+| 21/05/2026 | Documento inicial alinhado ao briefing Flutter; rotas `/avaliar/esboco`, `/aprimorar/feedback` como canônicas |

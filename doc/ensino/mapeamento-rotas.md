@@ -202,6 +202,10 @@ Seed padrão do manuscrito (`GeneralDiscoursePromptSeeder`): pede introdução, 
 
 ## 11. Lacunas de API para o Flutter (referência rápida)
 
+**Plano acordado com mobile (21/05/2026):** [../mobile/plano-api-ensino.md](../mobile/plano-api-ensino.md) · [../mobile/contrato-json-backend-flutter.md](../mobile/contrato-json-backend-flutter.md)
+
+**P0 destacado:** `POST /api/v1/avaliar/esboco` (avaliação Shinyashiki + be-T, não geração de texto).
+
 Rotas **existentes no admin** mas **ausentes em `/api/v1`**:
 
 - Gerar guia prático
@@ -212,3 +216,27 @@ Rotas **existentes no admin** mas **ausentes em `/api/v1`**:
 - Apresentação / timer 10 min (hoje só Blade)
 
 Ver [relatorio-metodologico.md](./relatorio-metodologico.md) para priorização funcional.
+
+---
+
+## 12. Rotas planejadas (briefing Flutter 21/05/2026)
+
+Status: ❌ = não implementado no repo (exceto onde indicado ✅).
+
+| Prioridade | Método | URL |
+|------------|--------|-----|
+| P0 | `POST` | `/api/v1/avaliar/esboco` |
+| P0 | CRUD | `/api/v1/partes` + `generate-esboco`, `esboco/improve`, settings |
+| P0 | `PUT` | `/api/v1/discursos/{id}` |
+| P0 | `POST` | `/api/v1/discursos/{id}/generate-guia`, `gerar-manuscrito`, `manuscrito/improve` |
+| P0 | CRUD | `/api/v1/respostas-geradas` |
+| P0 | `POST` | `/api/v1/comentarios/gerar` |
+| P1 | `POST` | `/api/v1/ensaio/registrar` |
+| P1 | `GET` | `/api/v1/ensaio/metas-tempo` |
+| P1 | `POST` | `/api/v1/aprimorar/feedback` |
+| P1 | `POST` | `/api/v1/estudo/pesquisa`, `meditacao`, `memorizar` |
+| P1 | `GET` | `/api/v1/estudo/progresso/{id}` |
+| P2 | `POST/GET` | `/api/v1/avaliacoes-orador` |
+| P2 | `POST` | `/api/v1/avaliar/esboco/ocr` |
+
+Assentinel ✅: ver § API v1 em [../mobile/ROTAS-PRODUCAO.md](../mobile/ROTAS-PRODUCAO.md).

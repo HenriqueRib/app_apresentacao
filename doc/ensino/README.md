@@ -8,9 +8,14 @@ Documentação técnica do backend Laravel voltado a **estudo teocrático**, **p
 |-----------|----------|
 | [mapeamento-rotas.md](./mapeamento-rotas.md) | URLs, métodos HTTP, autenticação, payloads e o que cada rota gera |
 | [relatorio-metodologico.md](./relatorio-metodologico.md) | Shinyashiki (5 passos), be-T, LEIA, 53 características, lacunas e roadmap |
-| [briefing-backend-novas-rotas.md](./briefing-backend-novas-rotas.md) | **Script para o time backend** — novas rotas (avaliar esboço, partes, S-315, ensaio) |
-| [roadmap-integracao-flutter.md](./roadmap-integracao-flutter.md) | **Script para o app Flutter** — sprints, telas, `EnsinoApiService` |
+| [roadmap-funcionalidades.md](./roadmap-funcionalidades.md) | Ideias novas (avaliação esboço, S-315, ensaio, 53 características) |
+| [brief-backend-novas-rotas.md](./brief-backend-novas-rotas.md) | Resumo técnico backend (espelha mobile) |
+| [../mobile/briefing-backend-ensino.md](../mobile/briefing-backend-ensino.md) | **Briefing formal** enviado pelo Flutter |
+| [../mobile/plano-api-ensino.md](../mobile/plano-api-ensino.md) | Plano completo para o app mobile |
+| [../mobile/contrato-json-backend-flutter.md](../mobile/contrato-json-backend-flutter.md) | Contrato JSON Flutter ↔ API |
 | [../api_documentacao_v1.md](../api_documentacao_v1.md) | Contrato JSON da API v1 para o app Flutter |
+
+**Scripts:** `scripts/ensino/brief-backend.sh` (resumo no terminal) · `scripts/ensino/prompt-implementacao.md` (sessão Cursor)
 
 ## Visão rápida: dois “mundos” de acesso
 
