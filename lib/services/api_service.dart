@@ -266,14 +266,23 @@ class ApiService {
     }
   }
 
-  /// Gera comentários da semana via rota em produção: POST /api/wol/comentarios
+  /// Gera comentários da semana via v1 (com fallback para rota legada /wol).
   Future<int> generateWeeklyComments() async {
     try {
-      final response = await ApiHttpHelper.post(
-        ApiRoutes.wolComentariosGerar,
+      var response = await ApiHttpHelper.post(
+        ApiRoutes.comentariosGerar,
         body: jsonEncode({}),
         timeout: _requestTimeout,
       );
+
+      // Fallback: se v1 retornar 404, tentar rota legada WOL
+      if (response.statusCode == 404) {
+        response = await ApiHttpHelper.post(
+          ApiRoutes.wolComentariosGerar,
+          body: jsonEncode({}),
+          timeout: _requestTimeout,
+        );
+      }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final decoded = jsonDecode(response.body);
@@ -517,39 +526,29 @@ class ApiService {
     }
   }
 
-  /// Gera esboço da parte com [modo]: `esboco_topicos` (padrão) ou `manuscrito`.
-  Future<String> generateParteEsboco(String id, {String modo = 'esboco_topicos'}) async {
+  Future<String> generateParteEsboco(String id) async {
     final response = await ApiHttpHelper.post(
-      '${ApiRoutes.partes}/$id/generate-esboco',
-      body: jsonEncode({'modo': modo}),
+      '${ApiRoutes.partes}/$id/gerar-esboco',
+      body: jsonEncode({'id': id}),
       timeout: _requestTimeout,
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final decoded = jsonDecode(response.body);
-      final data = decoded['data'] ?? decoded;
-      if (data is Map) {
-        return (data['content'] ?? data['esboco'] ?? '').toString();
-      }
       return (decoded['content'] ?? decoded['esboco'] ?? decoded['data'] ?? '').toString();
     }
     throw Exception('Falha ao gerar esboço da parte: ${response.statusCode}');
   }
 
-  /// Melhora seção do esboço. [secao]: `introducao`, `ponto_1`, `conclusao`, `texto_completo`.
-  Future<String> improveParteEsboco(String id, String instructions, [String? _legacyEsboco]) async {
+  Future<String> improveParteEsboco(String id, String instructions, String esbocoCompleto) async {
     final response = await ApiHttpHelper.post(
       '${ApiRoutes.partes}/$id/esboco/improve',
-      body: jsonEncode({'secao': 'texto_completo', 'instrucoes': instructions}),
+      body: jsonEncode({'instructions': instructions, 'esboco': esbocoCompleto}),
       timeout: _requestTimeout,
     );
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-      final data = decoded['data'] ?? decoded;
-      if (data is Map) {
-        return (data['content'] ?? data['esboco'] ?? '').toString();
-      }
       return (decoded['content'] ?? decoded['esboco'] ?? decoded['data'] ?? '').toString();
     }
     throw Exception('Falha ao melhorar esboço da parte: ${response.statusCode}');

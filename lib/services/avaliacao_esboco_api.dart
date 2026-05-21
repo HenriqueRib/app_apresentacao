@@ -90,6 +90,37 @@ class AvaliacaoEsbocoApi {
         'Falha ao avaliar esboço (texto livre): ${response.statusCode}');
   }
 
+  /// Lista histórico de avaliações realizadas.
+  Future<List<Map<String, dynamic>>> getHistorico() async {
+    final response = await ApiHttpHelper.get(
+      ApiRoutes.avaliarEsbocoHistorico,
+      timeout: _timeout,
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      return extractJsonList(decoded);
+    }
+    throw Exception(
+        'Falha ao obter histórico de avaliações: ${response.statusCode}');
+  }
+
+  /// Busca detalhe de uma avaliação específica pelo ID.
+  Future<AvaliacaoEsbocoResponse> getAvaliacao(String id) async {
+    final response = await ApiHttpHelper.get(
+      '${ApiRoutes.avaliarEsboco}/$id',
+      timeout: _timeout,
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final data = unwrapData(decoded);
+      return AvaliacaoEsbocoResponse.fromJson(data);
+    }
+    throw Exception(
+        'Falha ao buscar avaliação $id: ${response.statusCode}');
+  }
+
   Map<String, dynamic> _buildRequestBody(Speech speech, {int? focoId}) {
     return {
       'tipo': speech.apiTipo,
