@@ -5,7 +5,7 @@ import 'package:palestrante_de_sucesso/main.dart';
 
 void main() {
   testWidgets('App should build successfully', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp(isOnboardingCompleted: false));
+    await tester.pumpWidget(const MyApp());
 
     expect(find.byType(MaterialApp), findsOneWidget);
   });

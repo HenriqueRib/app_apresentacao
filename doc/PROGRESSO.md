@@ -1,6 +1,6 @@
 # Progresso do Desenvolvimento - Poder de Convencer
 
-**Última atualização:** 23/03/2026
+**Última atualização:** 20/05/2026
 
 ## Visão Geral
 
@@ -200,6 +200,20 @@ assets/
 
 ---
 
+## 8. Ferramentas Aditivas (Expansão 2026)
+
+| Item | Status | Descrição |
+|------|--------|-----------|
+| Hub na aba Início | [x] | `ToolsHubSection` com 5 cards |
+| Central da Reunião | [x] | `MeetingHubScreen` + favoritos e prancheta |
+| Timer Pro | [x] | Split 1+7+2, bordas coloridas, presets |
+| Meu Estúdio de Esboços | [x] | Tópicos independentes + flashcards + IA refinar |
+| Autoavaliação be-T | [x] | 53 características + histórico |
+| Masterclass Shinyashiki | [x] | JSON + 5 passos + Treinador de Voz |
+| Testes providers | [x] | meeting, study_studio, oratory_guide |
+
+---
+
 ## JSON das 53 Características
 
 O arquivo `assets/data/caracteristicas_oratoria.json` contém:
@@ -259,8 +273,9 @@ flutter build ios
 | Executar (Modo Palco) | 95% |
 | Aprimorar | 90% |
 | Biblioteca 53 Chars | 100% |
+| Ferramentas Aditivas | 100% |
 
-**Progresso Geral: ~95%**
+**Progresso Geral: ~98%**
 
 O aplicativo está **usável** para o fluxo completo:
 1. Criar discurso com planejamento

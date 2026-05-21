@@ -148,43 +148,61 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(OnboardingPage page) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: page.color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Adapt spacing and sizing dynamically if the screen height is restricted (e.g. landscape or small devices)
+        final double availableHeight = constraints.maxHeight;
+        final double spacingFactor = availableHeight < 400 ? 0.5 : 1.0;
+        final double iconSize = availableHeight < 400 ? 80 : 120;
+        final double iconSymbolSize = availableHeight < 400 ? 44 : 64;
+
+        return Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: iconSize,
+                    height: iconSize,
+                    decoration: BoxDecoration(
+                      color: page.color.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      page.icon,
+                      size: iconSymbolSize,
+                      color: page.color,
+                    ),
+                  ),
+                  SizedBox(height: 40 * spacingFactor),
+                  Text(
+                    page.title,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: availableHeight < 400 ? 20 : 28,
+                        ),
+                  ),
+                  SizedBox(height: 16 * spacingFactor),
+                  Text(
+                    page.description,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppTheme.textSecondary,
+                          height: 1.5,
+                          fontSize: availableHeight < 400 ? 14 : 16,
+                        ),
+                  ),
+                ],
+              ),
             ),
-            child: Icon(
-              page.icon,
-              size: 64,
-              color: page.color,
-            ),
           ),
-          const SizedBox(height: 48),
-          Text(
-            page.title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            page.description,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textSecondary,
-                  height: 1.5,
-                ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/speech.dart';
 import '../../providers/speech_provider.dart';
 import '../../services/characteristics_service.dart';
+import '../tools/timer/presentation_timer_pro_screen.dart';
 
 class TrainingModuleScreen extends StatefulWidget {
   final Speech speech;
@@ -230,6 +231,16 @@ class _TrainingModuleScreenState extends State<TrainingModuleScreen>
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PresentationTimerProScreen(),
+              ),
+            ),
+            icon: const Icon(Icons.timer),
+            label: const Text('Abrir Timer Pro (split + alertas)'),
           ),
           const SizedBox(height: 24),
           Card(

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/oratory_characteristic.dart';
+import '../../providers/oratory_guide_provider.dart';
 import '../../services/characteristics_service.dart';
+import '../tools/bet_guide/characteristic_detail_screen.dart';
+import '../tools/bet_guide/self_assessment_screen.dart';
 
 class CharacteristicsLibraryScreen extends StatefulWidget {
   const CharacteristicsLibraryScreen({super.key});
@@ -16,6 +20,14 @@ class _CharacteristicsLibraryScreenState
   final _searchController = TextEditingController();
   String _searchQuery = '';
   String? _selectedCategoryId;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<OratoryGuideProvider>().load();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +46,36 @@ class _CharacteristicsLibraryScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('53 Características'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.fact_check),
+            tooltip: 'Autoavaliação',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SelfAssessmentScreen()),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Consumer<OratoryGuideProvider>(
+              builder: (context, guide, _) {
+                if (guide.weeklyFocusIds.isEmpty) return const SizedBox.shrink();
+                return Card(
+                  color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      'Foco da semana: ${guide.weeklyFocusIds.length} característica(s)',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -176,7 +215,7 @@ class _CharacteristicCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ExpansionTile(
+      child: ListTile(
         leading: CircleAvatar(
           backgroundColor: AppTheme.primaryColor,
           foregroundColor: Colors.white,
@@ -186,96 +225,18 @@ class _CharacteristicCard extends StatelessWidget {
           characteristic.title,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        subtitle: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppTheme.accentColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                characteristic.category,
-                style: const TextStyle(fontSize: 10, color: AppTheme.accentColor),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Pág. ${characteristic.pageReference}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+        subtitle: Text(
+          '${characteristic.category} · Pág. ${characteristic.pageReference}',
         ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.play_arrow,
-                              color: Colors.blue, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'O que fazer:',
-                            style:
-                                Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(characteristic.action),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.lightbulb,
-                              color: AppTheme.accentColor, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Por que é importante:',
-                            style:
-                                Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      color: AppTheme.accentColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(characteristic.importance),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                CharacteristicDetailScreen(characteristic: characteristic),
           ),
-        ],
+        ),
       ),
     );
   }
 }
+

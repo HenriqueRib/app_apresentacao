@@ -92,6 +92,29 @@ Esta rota poderá ser usada para enriquecer o esboço com referências bíblicas
 
 ---
 
+## 3. Refinar Texto (Tópico de Esboço)
+
+Refina um trecho curto mantendo a autenticidade do orador (usado no Meu Estúdio de Esboços).
+
+### Rota
+`POST /discursos/refinar-texto`
+
+### Request Body (JSON)
+```json
+{
+  "texto": "Disciplina ajuda no sucesso"
+}
+```
+
+### Response (JSON)
+```json
+{
+  "texto_refinado": "A disciplina é um aliado essencial para alcançar o sucesso duradouro."
+}
+```
+
+---
+
 ## Status de Erro Esperados
 
 - `400 Bad Request`: Quando o corpo da requisição está mal formatado ou faltando campos obrigatórios.

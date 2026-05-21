@@ -13,6 +13,8 @@ import 'training/training_module_screen.dart';
 import 'execution/stage_mode_new_screen.dart';
 import 'dashboard/improvement_dashboard_screen.dart';
 import 'characteristics/characteristics_library_screen.dart';
+import 'tools/tools_hub_section.dart';
+import 'tools/meeting/meeting_hub_screen.dart';
 
 class HomeScreenNew extends StatefulWidget {
   const HomeScreenNew({super.key});
@@ -133,6 +135,8 @@ class _HomeTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildMethodCycle(context),
+                const SizedBox(height: 24),
+                const ToolsHubSection(),
                 const SizedBox(height: 16),
                 _buildWeeklyCommentsCard(context),
                 const SizedBox(height: 24),
@@ -341,16 +345,28 @@ class _HomeTab extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final preview = data.comentarios.take(2).toList();
+        final preview = data.comentarioTexts.take(2).toList();
         return Card(
-          child: Padding(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MeetingHubScreen()),
+            ),
+            child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Comentarios da semana',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Comentarios da semana',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -380,8 +396,20 @@ class _HomeTab extends StatelessWidget {
                       child: Text('- $comment'),
                     ),
                   ),
+                if (data.comentarioTexts.length > 2)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Toque para ver todos (${data.comentarioTexts.length})',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
               ],
             ),
+          ),
           ),
         );
       },
