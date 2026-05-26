@@ -6,6 +6,7 @@ import '../voice_coaching_tip_card.dart';
 import '../voice_online_analysis_section.dart';
 import '../voice_rehearsal_report_section.dart';
 import '../voice_s315_feedback_section.dart';
+import '../voice_shinyashiki_feedback_section.dart';
 import 'voice_rehearsal_report_context.dart';
 
 class VoiceRehearsalReportMinimalView extends StatelessWidget {
@@ -171,6 +172,12 @@ class _ResumoTab extends StatelessWidget {
           attempt.subjectPreview,
           style: const TextStyle(fontSize: 14, height: 1.5),
         ),
+        if (attempt.summary.outlineCoveragePercent != null) ...[
+          const SizedBox(height: 12),
+          _OutlineCoverageChip(
+            percent: attempt.summary.outlineCoveragePercent!,
+          ),
+        ],
         if (ctx.hasRecording) ...[
           const SizedBox(height: 16),
           OutlinedButton.icon(
@@ -259,7 +266,7 @@ class _MaisTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final attempt = ctx.attempt;
-  final transcript = attempt.summary.fullTranscript.trim();
+    final transcript = attempt.summary.fullTranscript.trim();
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -277,6 +284,11 @@ class _MaisTab extends StatelessWidget {
           ),
           const SizedBox(height: 20),
         ],
+        VoiceShinyashikiFeedbackSection(
+          summary: attempt.summary,
+          dense: true,
+        ),
+        const SizedBox(height: 20),
         if (transcript.isNotEmpty) ...[
           Text(
             'Transcrição completa',
@@ -293,6 +305,43 @@ class _MaisTab extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+class _OutlineCoverageChip extends StatelessWidget {
+  final double percent;
+
+  const _OutlineCoverageChip({required this.percent});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = percent >= 70
+        ? AppTheme.successColor
+        : percent >= 40
+            ? AppTheme.warningColor
+            : AppTheme.textSecondary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.auto_stories_outlined, size: 20, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Cobertura do esboço: ${percent.round()}% '
+              'das palavras-chave citadas na transcrição.',
+              style: TextStyle(fontSize: 12, height: 1.35, color: color),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

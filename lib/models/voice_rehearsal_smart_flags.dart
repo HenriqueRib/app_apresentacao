@@ -31,6 +31,9 @@ class VoiceRehearsalSmartFlags {
   final bool minimalCoachEnabled;
   final bool listenBackEnabled;
   final bool weeklyGoalEnabled;
+  final bool autoScrollTeleprompter;
+  final bool silentCoachEnabled;
+  final bool blockPracticeEnabled;
 
   const VoiceRehearsalSmartFlags({
     this.warmupEnabled = false,
@@ -44,6 +47,9 @@ class VoiceRehearsalSmartFlags {
     this.minimalCoachEnabled = false,
     this.listenBackEnabled = false,
     this.weeklyGoalEnabled = false,
+    this.autoScrollTeleprompter = false,
+    this.silentCoachEnabled = false,
+    this.blockPracticeEnabled = false,
   });
 
   static const VoiceRehearsalSmartFlags defaults = VoiceRehearsalSmartFlags();
@@ -60,6 +66,9 @@ class VoiceRehearsalSmartFlags {
     bool? minimalCoachEnabled,
     bool? listenBackEnabled,
     bool? weeklyGoalEnabled,
+    bool? autoScrollTeleprompter,
+    bool? silentCoachEnabled,
+    bool? blockPracticeEnabled,
   }) {
     return VoiceRehearsalSmartFlags(
       warmupEnabled: warmupEnabled ?? this.warmupEnabled,
@@ -75,6 +84,10 @@ class VoiceRehearsalSmartFlags {
       minimalCoachEnabled: minimalCoachEnabled ?? this.minimalCoachEnabled,
       listenBackEnabled: listenBackEnabled ?? this.listenBackEnabled,
       weeklyGoalEnabled: weeklyGoalEnabled ?? this.weeklyGoalEnabled,
+      autoScrollTeleprompter:
+          autoScrollTeleprompter ?? this.autoScrollTeleprompter,
+      silentCoachEnabled: silentCoachEnabled ?? this.silentCoachEnabled,
+      blockPracticeEnabled: blockPracticeEnabled ?? this.blockPracticeEnabled,
     );
   }
 
@@ -90,7 +103,31 @@ class VoiceRehearsalSmartFlags {
         'minimalCoachEnabled': minimalCoachEnabled,
         'listenBackEnabled': listenBackEnabled,
         'weeklyGoalEnabled': weeklyGoalEnabled,
+        'autoScrollTeleprompter': autoScrollTeleprompter,
+        'silentCoachEnabled': silentCoachEnabled,
+        'blockPracticeEnabled': blockPracticeEnabled,
       };
+
+  /// Poucos recursos: countdown, marcos e carry-over.
+  static const VoiceRehearsalSmartFlags presetBeginner = VoiceRehearsalSmartFlags(
+    countdownEnabled: true,
+    timeMilestonesEnabled: true,
+    carryOverFocusEnabled: true,
+  );
+
+  /// Conjunto amplo para quem quer o coach completo.
+  static const VoiceRehearsalSmartFlags presetComplete = VoiceRehearsalSmartFlags(
+    countdownEnabled: true,
+    warmupEnabled: true,
+    hapticEnabled: true,
+    timeMilestonesEnabled: true,
+    smartPauseEnabled: true,
+    carryOverFocusEnabled: true,
+    coachFocusEnabled: true,
+    coachFocusMode: CoachFocusMode.all,
+    listenBackEnabled: true,
+    weeklyGoalEnabled: true,
+  );
 
   factory VoiceRehearsalSmartFlags.fromJson(Map<String, dynamic>? json) {
     if (json == null) return defaults;
@@ -108,6 +145,10 @@ class VoiceRehearsalSmartFlags {
       minimalCoachEnabled: json['minimalCoachEnabled'] as bool? ?? false,
       listenBackEnabled: json['listenBackEnabled'] as bool? ?? false,
       weeklyGoalEnabled: json['weeklyGoalEnabled'] as bool? ?? false,
+      autoScrollTeleprompter:
+          json['autoScrollTeleprompter'] as bool? ?? false,
+      silentCoachEnabled: json['silentCoachEnabled'] as bool? ?? false,
+      blockPracticeEnabled: json['blockPracticeEnabled'] as bool? ?? false,
     );
   }
 }

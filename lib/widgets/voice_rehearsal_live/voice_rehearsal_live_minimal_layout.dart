@@ -128,6 +128,7 @@ class _ContentBlock extends StatelessWidget {
           if (ctx.isRecording && ctx.topInsight != null)
             VoiceCoachingFocusBanner(
               topInsight: ctx.topInsight,
+              carryOverLabel: ctx.carryOverLabel,
               onTap: ctx.onScrollToFirstInsight,
             ),
           Expanded(child: _buildFeed(ctx)),

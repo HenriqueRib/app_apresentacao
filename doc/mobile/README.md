@@ -26,7 +26,7 @@ Especificação para o time **Flutter** e **Backend**, espelhando as telas Blade
 | **Discursos** | `discursos.blade.php` | [discursos.md](./discursos.md) |
 | **Partes** | `partes.blade.php` | [partes.md](./partes.md) |
 | **Avaliação oradores (S-315)** | — (novo, P2) | [plano-api-ensino.md §3.6](./plano-api-ensino.md) |
-| **Ensaio be-T** (*Ensaie. Treine. Evolua.*) | — (local + API opcional) | **[ensaio-be-t-funcionalidades.md](./ensaio-be-t-funcionalidades.md)** |
+| **Ensaio be-T** (*Ensaie. Treine. Evolua.*) | — (local + API opcional) | **[ensaio-be-t-funcionalidades.md](./ensaio-be-t-funcionalidades.md)** · [prompt melhorias](./ensaio-be-t-prompt-melhorias.md) |
 
 ---
 

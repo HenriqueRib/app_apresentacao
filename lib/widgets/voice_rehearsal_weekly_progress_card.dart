@@ -19,6 +19,7 @@ class _VoiceRehearsalWeeklyProgressCardState
   VoiceRehearsalWeeklyGoal _goal = VoiceRehearsalWeeklyGoal.defaults;
   bool _smartWeekly = false;
   bool _loading = true;
+  int _streakDays = 0;
 
   @override
   void initState() {
@@ -31,11 +32,13 @@ class _VoiceRehearsalWeeklyProgressCardState
     final count = await storage.countVoiceRehearsalAttemptsThisWeek();
     final goal = await storage.getVoiceRehearsalWeeklyGoal();
     final flags = await storage.getVoiceRehearsalSmartFlags();
+    final streak = await storage.getVoiceRehearsalStreak();
     if (mounted) {
       setState(() {
         _count = count;
         _goal = goal;
         _smartWeekly = flags.weeklyGoalEnabled;
+        _streakDays = streak.consecutiveDays;
         _loading = false;
       });
     }
@@ -98,6 +101,42 @@ class _VoiceRehearsalWeeklyProgressCardState
                     ? 'Meta semanal concluída!'
                     : 'Faltam ${(target - _count).clamp(0, target)} ensaio(s) para a meta.',
                 style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+              ),
+              if (_streakDays >= 2) ...[
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.local_fire_department,
+                        size: 14, color: AppTheme.accentColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Streak: $_streakDays dia(s) seguidos de ensaio',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.accentColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const VoiceRehearsalScreen(
+                        initialDurationGoalSeconds: 240,
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.timer_outlined, size: 16),
+                  label: const Text(
+                    'Ensaio 4 min',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                ),
               ),
             ],
           ),

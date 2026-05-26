@@ -34,6 +34,7 @@ class VoiceRehearsalLiveContext {
   final bool isPaused;
   final bool isWarmupPhase;
   final bool hideScore;
+  final String? carryOverLabel;
 
   const VoiceRehearsalLiveContext({
     required this.score,
@@ -61,6 +62,7 @@ class VoiceRehearsalLiveContext {
     this.isPaused = false,
     this.isWarmupPhase = false,
     this.hideScore = false,
+    this.carryOverLabel,
   });
 
   factory VoiceRehearsalLiveContext.fromProvider({
@@ -118,6 +120,10 @@ class VoiceRehearsalLiveContext {
       isPaused: provider.isPaused,
       isWarmupPhase: provider.isWarmupPhase,
       hideScore: provider.isWarmupPhase,
+      carryOverLabel: provider.smartFlags.carryOverFocusEnabled &&
+              provider.nextFocus != null
+          ? provider.nextFocus!.label
+          : null,
     );
   }
 

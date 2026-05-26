@@ -19,6 +19,8 @@ class VoiceRehearsalHistoryScreen extends StatefulWidget {
 
 class _VoiceRehearsalHistoryScreenState
     extends State<VoiceRehearsalHistoryScreen> {
+  static const _maxCompareSelection = 4;
+
   bool _compareMode = false;
   final Set<String> _selectedIds = {};
   String? _seriesFilter;
@@ -42,17 +44,18 @@ class _VoiceRehearsalHistoryScreenState
     setState(() {
       if (_selectedIds.contains(id)) {
         _selectedIds.remove(id);
-      } else if (_selectedIds.length < 2) {
+      } else if (_selectedIds.length < _maxCompareSelection) {
         _selectedIds.add(id);
       } else {
-        _selectedIds.remove(_selectedIds.first);
+        final oldest = _selectedIds.first;
+        _selectedIds.remove(oldest);
         _selectedIds.add(id);
       }
     });
   }
 
-  void _openCompare(List<VoiceRehearsalAttempt> attempts) {
-    if (_selectedIds.length != 2) return;
+  void _openCompare() {
+    if (_selectedIds.length < 2) return;
 
     final allAttempts = context.read<VoiceRehearsalHistoryProvider>().attempts;
     final selected = allAttempts
@@ -60,15 +63,12 @@ class _VoiceRehearsalHistoryScreenState
         .toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    if (selected.length != 2) return;
+    if (selected.length < 2) return;
 
     Navigator.of(context)
         .push(
       MaterialPageRoute(
-        builder: (_) => VoiceRehearsalCompareScreen(
-          older: selected.first,
-          newer: selected.last,
-        ),
+        builder: (_) => VoiceRehearsalCompareScreen(attempts: selected),
       ),
     )
         .then((_) {
@@ -85,7 +85,11 @@ class _VoiceRehearsalHistoryScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_compareMode ? 'Selecione 2 ensaios' : 'Histórico de ensaios'),
+        title: Text(
+          _compareMode
+              ? 'Selecione 2–$_maxCompareSelection ensaios'
+              : 'Histórico de ensaios',
+        ),
         actions: [
           Consumer<VoiceRehearsalHistoryProvider>(
             builder: (context, provider, _) {
@@ -145,7 +149,7 @@ class _VoiceRehearsalHistoryScreenState
                   16,
                   16,
                   16,
-                  _compareMode && _selectedIds.length == 2 ? 88 : 16,
+                  _compareMode && _selectedIds.length >= 2 ? 88 : 16,
                 ),
                 itemCount: filtered.length + 1 + (seriesNames.isNotEmpty ? 1 : 0),
                 itemBuilder: (context, index) {
@@ -186,6 +190,7 @@ class _VoiceRehearsalHistoryScreenState
                       padding: const EdgeInsets.only(bottom: 12),
                       child: VoiceRehearsalEvolutionChart(
                         attempts: filtered,
+                        seriesLabel: _seriesFilter,
                       ),
                     );
                   }
@@ -274,6 +279,7 @@ class _VoiceRehearsalHistoryScreenState
                           '${attempt.modeLabel} · '
                           '${_formatDuration(attempt.durationSeconds)} · '
                           'Nota ${attempt.finalScore.toStringAsFixed(1)}/10'
+                          '${attempt.speakerName != null && attempt.speakerName!.trim().isNotEmpty ? '\n${attempt.speakerName}' : ''}'
                           '${attempt.seriesName != null && attempt.seriesName!.isNotEmpty ? '\n${attempt.seriesName}' : ''}',
                           style: const TextStyle(fontSize: 12),
                         ),
@@ -306,14 +312,13 @@ class _VoiceRehearsalHistoryScreenState
                   bottom: 16,
                   child: SafeArea(
                     child: FilledButton.icon(
-                      onPressed: _selectedIds.length == 2
-                          ? () => _openCompare(provider.attempts)
-                          : null,
+                      onPressed:
+                          _selectedIds.length >= 2 ? _openCompare : null,
                       icon: const Icon(Icons.compare_arrows),
                       label: Text(
-                        _selectedIds.length == 2
-                            ? 'Comparar selecionados'
-                            : 'Selecione mais ${_selectedIds.isEmpty ? 2 : 1}',
+                        _selectedIds.length >= 2
+                            ? 'Comparar ${_selectedIds.length} ensaios'
+                            : 'Selecione mais ${2 - _selectedIds.length}',
                       ),
                     ),
                   ),

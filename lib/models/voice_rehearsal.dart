@@ -197,6 +197,7 @@ class VoiceRehearsalSummary {
   final String fullTranscript;
   final String formattedTranscript;
   final Map<String, dynamic>? speechStructureJson;
+  final double? outlineCoveragePercent;
 
   const VoiceRehearsalSummary({
     required this.metrics,
@@ -208,7 +209,26 @@ class VoiceRehearsalSummary {
     this.fullTranscript = '',
     this.formattedTranscript = '',
     this.speechStructureJson,
+    this.outlineCoveragePercent,
   });
+
+  VoiceRehearsalSummary copyWith({
+    double? outlineCoveragePercent,
+  }) {
+    return VoiceRehearsalSummary(
+      metrics: metrics,
+      events: events,
+      characteristicScores: characteristicScores,
+      topRepeatedWords: topRepeatedWords,
+      insights: insights,
+      scoreBreakdown: scoreBreakdown,
+      fullTranscript: fullTranscript,
+      formattedTranscript: formattedTranscript,
+      speechStructureJson: speechStructureJson,
+      outlineCoveragePercent:
+          outlineCoveragePercent ?? this.outlineCoveragePercent,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'metrics': metrics.toJson(),
@@ -225,6 +245,8 @@ class VoiceRehearsalSummary {
           'formattedTranscript': formattedTranscript,
         if (speechStructureJson != null)
           'speechStructure': speechStructureJson,
+        if (outlineCoveragePercent != null)
+          'outlineCoveragePercent': outlineCoveragePercent,
       };
 
   factory VoiceRehearsalSummary.fromJson(Map<String, dynamic> json) {
@@ -265,6 +287,8 @@ class VoiceRehearsalSummary {
       speechStructureJson: json['speechStructure'] is Map
           ? Map<String, dynamic>.from(json['speechStructure'] as Map)
           : null,
+      outlineCoveragePercent:
+          (json['outlineCoveragePercent'] as num?)?.toDouble(),
     );
   }
 }

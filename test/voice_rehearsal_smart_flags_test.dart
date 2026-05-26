@@ -20,4 +20,20 @@ void main() {
     expect(VoiceRehearsalSmartFlags.defaults.warmupEnabled, false);
     expect(VoiceRehearsalSmartFlags.defaults.weeklyGoalEnabled, false);
   });
+
+  test('preset beginner enables countdown and carry-over only', () {
+    const p = VoiceRehearsalSmartFlags.presetBeginner;
+    expect(p.countdownEnabled, true);
+    expect(p.carryOverFocusEnabled, true);
+    expect(p.warmupEnabled, false);
+    expect(p.listenBackEnabled, false);
+  });
+
+  test('preset complete enables broad coach set', () {
+    const p = VoiceRehearsalSmartFlags.presetComplete;
+    expect(p.warmupEnabled, true);
+    expect(p.coachFocusEnabled, true);
+    expect(p.weeklyGoalEnabled, true);
+    expect(p.minimalCoachEnabled, false);
+  });
 }

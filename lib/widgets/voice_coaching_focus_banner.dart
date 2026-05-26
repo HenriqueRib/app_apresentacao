@@ -6,11 +6,13 @@ import '../models/voice_rehearsal.dart';
 /// Banner sticky com a dica prioritária para ação imediata.
 class VoiceCoachingFocusBanner extends StatelessWidget {
   final VoiceImprovementInsight? topInsight;
+  final String? carryOverLabel;
   final VoidCallback? onTap;
 
   const VoiceCoachingFocusBanner({
     super.key,
     required this.topInsight,
+    this.carryOverLabel,
     this.onTap,
   });
 
@@ -24,7 +26,10 @@ class VoiceCoachingFocusBanner extends StatelessWidget {
 
     final highPriority = insight.severityRank >= 3;
 
-    return Material(
+    return Semantics(
+      header: true,
+      label: 'Foco agora: $actionText',
+      child: Material(
       color: AppTheme.warningColor.withValues(alpha: 0.1),
       elevation: 2,
       shadowColor: Colors.black26,
@@ -59,6 +64,22 @@ class VoiceCoachingFocusBanner extends StatelessWidget {
                                 : AppTheme.primaryColor,
                           ),
                         ),
+                        if (carryOverLabel != null &&
+                            carryOverLabel!.isNotEmpty) ...[
+                          const SizedBox(width: 6),
+                          Chip(
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            labelPadding:
+                                const EdgeInsets.symmetric(horizontal: 4),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            label: Text(
+                              carryOverLabel!,
+                              style: const TextStyle(fontSize: 9),
+                            ),
+                          ),
+                        ],
                         if (highPriority) ...[
                           const SizedBox(width: 6),
                           Container(
@@ -97,6 +118,7 @@ class VoiceCoachingFocusBanner extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

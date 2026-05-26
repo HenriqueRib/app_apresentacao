@@ -20,7 +20,10 @@ class VoiceRehearsalLiveCockpit extends StatelessWidget {
     final isLive = ctx.isRecording && !ctx.isPaused;
 
     return RepaintBoundary(
-      child: Material(
+      child: Semantics(
+        container: true,
+        label: 'Painel do ensaio: nota, tempo e métricas',
+        child: Material(
       color: AppTheme.surfaceColor,
       elevation: 1,
       shadowColor: Colors.black26,
@@ -130,7 +133,8 @@ class VoiceRehearsalLiveCockpit extends StatelessWidget {
           Divider(height: 1, color: Colors.grey.shade200),
         ],
       ),
-    ),
+        ),
+      ),
     );
   }
 }

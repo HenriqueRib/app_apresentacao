@@ -25,6 +25,8 @@ class VoiceVolumeTestProvider extends ChangeNotifier {
   VoiceVolumeCalibration? _calibration;
   Timer? _idealZoneTimer;
   Timer? _calibrationTimer;
+  Timer? _calibrationSafetyTimer;
+  bool _calibrationFinishing = false;
   double _idealSecondsHeld = 0;
   final List<double> _calibrationSamples = [];
 
@@ -106,8 +108,14 @@ class VoiceVolumeTestProvider extends ChangeNotifier {
       notifyListeners();
 
       _calibrationTimer?.cancel();
+      _calibrationSafetyTimer?.cancel();
       _calibrationTimer = Timer(const Duration(seconds: 5), () async {
         await _finishCalibration();
+      });
+      _calibrationSafetyTimer = Timer(const Duration(seconds: 8), () async {
+        if (_state == VolumeTestState.calibrating) {
+          await _finishCalibration();
+        }
       });
     } catch (e) {
       _state = VolumeTestState.error;
@@ -116,25 +124,48 @@ class VoiceVolumeTestProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _finishCalibration() async {
+  /// Libera gravador e estado se o usuário sair durante calibração/escuta.
+  Future<void> cancelActiveSession() async {
+    _idealZoneTimer?.cancel();
     _calibrationTimer?.cancel();
-    await _stopRecordingInternal();
-
-    if (_calibrationSamples.isEmpty) {
-      _state = VolumeTestState.error;
-      _errorMessage = 'Não foi possível medir o volume. Tente novamente.';
+    _calibrationSafetyTimer?.cancel();
+    if (_state == VolumeTestState.calibrating ||
+        _state == VolumeTestState.listening) {
+      await _stopRecordingInternal();
+      _state = VolumeTestState.idle;
+      _errorMessage = null;
       notifyListeners();
+    }
+  }
+
+  Future<void> _finishCalibration() async {
+    if (_calibrationFinishing || _state != VolumeTestState.calibrating) {
       return;
     }
+    _calibrationFinishing = true;
+    _calibrationTimer?.cancel();
+    _calibrationSafetyTimer?.cancel();
+    await _stopRecordingInternal();
 
-    final referenceDb =
-        _calibrationSamples.reduce((a, b) => a + b) / _calibrationSamples.length;
-    final calibration = buildCalibration(referenceDb);
-    final storage = await StorageService.getInstance();
-    await storage.saveVolumeCalibration(calibration);
-    _calibration = calibration;
-    _state = VolumeTestState.idle;
-    notifyListeners();
+    try {
+      if (_calibrationSamples.isEmpty) {
+        _state = VolumeTestState.error;
+        _errorMessage = 'Não foi possível medir o volume. Tente novamente.';
+        notifyListeners();
+        return;
+      }
+
+      final referenceDb = _calibrationSamples.reduce((a, b) => a + b) /
+          _calibrationSamples.length;
+      final calibration = buildCalibration(referenceDb);
+      final storage = await StorageService.getInstance();
+      await storage.saveVolumeCalibration(calibration);
+      _calibration = calibration;
+      _state = VolumeTestState.idle;
+      notifyListeners();
+    } finally {
+      _calibrationFinishing = false;
+    }
   }
 
   Future<void> clearCalibration() async {
@@ -147,6 +178,7 @@ class VoiceVolumeTestProvider extends ChangeNotifier {
   Future<void> stop() async {
     _idealZoneTimer?.cancel();
     _calibrationTimer?.cancel();
+    _calibrationSafetyTimer?.cancel();
     await _stopRecordingInternal();
     _state = VolumeTestState.idle;
     notifyListeners();
@@ -219,7 +251,9 @@ class VoiceVolumeTestProvider extends ChangeNotifier {
   void dispose() {
     _idealZoneTimer?.cancel();
     _calibrationTimer?.cancel();
+    _calibrationSafetyTimer?.cancel();
     _amplitudeSubscription?.cancel();
+    unawaited(_stopRecordingInternal());
     _recorder.dispose();
     super.dispose();
   }

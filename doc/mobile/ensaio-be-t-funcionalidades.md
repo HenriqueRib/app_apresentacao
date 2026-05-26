@@ -100,7 +100,9 @@ Preferências salvas localmente (`voice_rehearsal_session_prefs`).
 
 ### 2.10 Modo inteligente (flags)
 
-Painel **Modo inteligente** no card Preparar ensaio — cada recurso é **opt-in** (desligado por padrão), persistido em `voice_rehearsal_smart_flags`.
+Painel **Modo inteligente** no card Preparar ensaio — cada recurso é **opt-in** (desligado por padrão), persistido em `voice_rehearsal_smart_flags`. Chips rápidos: **Iniciante**, **Completo** e **Desligar tudo**.
+
+Durante o ensaio, o chip de **foco carry-over** aparece no banner *Foco agora* (quando há meta salva).
 
 | Flag | Comportamento |
 |------|----------------|
@@ -114,8 +116,9 @@ Painel **Modo inteligente** no card Preparar ensaio — cada recurso é **opt-in
 | Coach mínimo | Só dicas de severidade alta |
 | Ouvir últimos 30 s | Pós-gravação (.m4a) |
 | Meta semanal na home | Card de progresso (padrão 3 ensaios/semana) |
+| Rolagem lenta do roteiro | Teleprompter desliza no bloco ativo durante o ensaio |
 
-**Vincular discurso:** escolhe um `Speech` do planejamento → tema, meta sugerida e **roteiro** (teleprompter leve com blocos do esboço).
+**Vincular discurso:** escolhe um `Speech` do planejamento → tema, meta sugerida e **roteiro** (teleprompter com blocos do esboço, bloco ativo, **Próximo bloco**, rolagem lenta opcional). Ao encerrar, **cobertura do esboço** (% palavras-chave citadas) no relatório.
 
 **Série / pasta:** texto opcional salvo no histórico; filtro por chip na lista.
 
@@ -133,6 +136,17 @@ Comparativo pós-ensaio: **vs último** e **Novo recorde!** / **vs recorde** (ba
 **Aviso STT:** se o reconhecimento de voz não estiver disponível, aparece: *"STT indisponível — volume e pausas continuam ativos."*
 
 **Permissão:** sem microfone, a tela mostra card pedindo ativação nas configurações do dispositivo.
+
+### 2.12 Integração com o ciclo do app
+
+| Recurso | Comportamento |
+|---------|----------------|
+| Onboarding Ensaio | Diálogo de 3 passos na primeira visita (persistido) |
+| Atalho 4 min | Card meta semanal na home → **Ensaio 4 min** |
+| Pós-ensaio forte | Nota ≥ 7,0 + discurso vinculado → sugere **Modo Palco** |
+| Abrir esboço | Pós-ensaio e relatório do histórico (`linkedSpeechId`) |
+| Autoavaliação | Pré-marca 2 características mais fracas do ensaio |
+| Export PDF | Histórico → relatório → ícone PDF (além de texto) |
 
 ---
 
@@ -242,6 +256,8 @@ Guia in-app:
 - Escuta microfone e mostra zona (baixo / ideal / alto)
 - **Calibrar** perfil de volume do usuário (persistido)
 - **Recalibrar** quando já existe calibração
+- Ao sair da tela durante calibração/escuta, o gravador é liberado; timeout de segurança evita ficar em “Calibrando”
+- Ao voltar ao Ensaio, `refreshVolumeCalibration()` atualiza o estado sem reiniciar a tela
 - A calibração ajusta os dB usados em todo o Ensaio (`applyCalibration`)
 
 ### 7.3 Muletas personalizadas (`voice_filler_settings_screen.dart`)
@@ -258,7 +274,9 @@ Guia in-app:
 | **Lista** | Título (tema ou preview da transcrição), data, modo, duração, nota |
 | **Abrir relatório** | Detalhe completo |
 | **Excluir** | Swipe ou ícone, com confirmação |
-| **Comparar** | Ícone `compare_arrows`: seleciona 2 ensaios → tela lado a lado (nota, WPM, muletas, pausas, duração) |
+| **Comparar** | Ícone `compare_arrows`: seleciona **2–4** ensaios → tabela (nota, WPM, muletas, pausas, duração, cobertura do esboço) |
+| **Evolução por série** | Gráfico filtra pelo chip de série; título mostra nome da série |
+| **Nota do usuário** | Campo livre no detalhe do ensaio; incluído na exportação |
 | **Série** | Filtro por pasta/série; campo definido no preparar ensaio |
 | **Exportar** | Ícone compartilhar no relatório → texto (Share) |
 | **Reproduzir áudio** | Se a tentativa veio do modo Gravar e o arquivo existe |

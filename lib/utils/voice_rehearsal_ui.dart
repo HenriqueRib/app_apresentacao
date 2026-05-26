@@ -133,3 +133,31 @@ List<CharacteristicStripItem> buildCharacteristicStripItems({
 
   return items;
 }
+
+/// Nota mínima para sugerir Modo Palco após ensaio com discurso vinculado.
+const kStageModeSuggestMinScore = 7.0;
+
+/// IDs das características be-T mais fracas no resumo (para autoavaliação).
+List<int> weakestCharacteristicIds(
+  VoiceRehearsalSummary summary, {
+  int count = 2,
+}) {
+  final items = buildCharacteristicStripItems(
+    events: summary.events,
+    summary: summary,
+    resolveTitle: (_) => '',
+  );
+  if (items.isNotEmpty) {
+    return items.take(count).map((i) => i.id).toList();
+  }
+
+  final fromInsights = <int>[];
+  for (final insight in summary.insights) {
+    final id = insight.characteristicId;
+    if (id != null && !fromInsights.contains(id)) {
+      fromInsights.add(id);
+    }
+    if (fromInsights.length >= count) break;
+  }
+  return fromInsights;
+}

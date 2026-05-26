@@ -29,6 +29,34 @@ class VoiceRehearsalSmartFlagsPanel extends StatelessWidget {
             style: const TextStyle(fontSize: 11),
           ),
           children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                ActionChip(
+                  label: const Text('Iniciante', style: TextStyle(fontSize: 11)),
+                  onPressed: () => _update(
+                    provider,
+                    VoiceRehearsalSmartFlags.presetBeginner,
+                  ),
+                ),
+                ActionChip(
+                  label: const Text('Completo', style: TextStyle(fontSize: 11)),
+                  onPressed: () => _update(
+                    provider,
+                    VoiceRehearsalSmartFlags.presetComplete,
+                  ),
+                ),
+                ActionChip(
+                  label: const Text('Desligar tudo', style: TextStyle(fontSize: 11)),
+                  onPressed: () => _update(
+                    provider,
+                    const VoiceRehearsalSmartFlags(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
             if (nextFocus != null && flags.carryOverFocusEnabled)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -114,6 +142,16 @@ class VoiceRehearsalSmartFlagsPanel extends StatelessWidget {
                   }).toList(),
                 ),
               ),
+            _sectionTitle('Esboço e roteiro'),
+            _flagSwitch(
+              title: 'Rolagem lenta do roteiro',
+              subtitle: 'Teleprompter desliza durante o bloco ativo',
+              value: flags.autoScrollTeleprompter,
+              onChanged: (v) => _update(
+                provider,
+                flags.copyWith(autoScrollTeleprompter: v),
+              ),
+            ),
             _sectionTitle('Pós-ensaio e hábito'),
             _flagSwitch(
               title: 'Ouvir últimos 30 s',
@@ -147,6 +185,7 @@ class VoiceRehearsalSmartFlagsPanel extends StatelessWidget {
     if (f.minimalCoachEnabled) n++;
     if (f.listenBackEnabled) n++;
     if (f.weeklyGoalEnabled) n++;
+    if (f.autoScrollTeleprompter) n++;
     return n;
   }
 

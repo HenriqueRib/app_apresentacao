@@ -17,6 +17,8 @@ class VoiceRehearsalAttempt {
   final VoiceRehearsalOnlineAnalysis? onlineAnalysis;
   final String? seriesName;
   final String? linkedSpeechId;
+  final String? userNote;
+  final String? speakerName;
 
   const VoiceRehearsalAttempt({
     required this.id,
@@ -31,6 +33,8 @@ class VoiceRehearsalAttempt {
     this.onlineAnalysis,
     this.seriesName,
     this.linkedSpeechId,
+    this.userNote,
+    this.speakerName,
   });
 
   String get listTitle {
@@ -55,26 +59,38 @@ class VoiceRehearsalAttempt {
         if (onlineAnalysis != null) 'onlineAnalysis': onlineAnalysis!.toJson(),
         if (seriesName != null) 'seriesName': seriesName,
         if (linkedSpeechId != null) 'linkedSpeechId': linkedSpeechId,
+        if (userNote != null) 'userNote': userNote,
+        if (speakerName != null) 'speakerName': speakerName,
       };
 
   VoiceRehearsalAttempt copyWith({
     VoiceRehearsalOnlineAnalysis? onlineAnalysis,
     String? seriesName,
     String? linkedSpeechId,
+    String? userNote,
+    bool clearUserNote = false,
+    VoiceRehearsalSummary? summary,
+    double? finalScore,
+    String? subjectPreview,
+    String? speakerName,
+    bool clearSpeakerName = false,
   }) {
     return VoiceRehearsalAttempt(
       id: id,
       createdAt: createdAt,
       mode: mode,
       durationSeconds: durationSeconds,
-      finalScore: finalScore,
+      finalScore: finalScore ?? this.finalScore,
       topic: topic,
-      subjectPreview: subjectPreview,
-      summary: summary,
+      subjectPreview: subjectPreview ?? this.subjectPreview,
+      summary: summary ?? this.summary,
       recordingFilePath: recordingFilePath,
       onlineAnalysis: onlineAnalysis ?? this.onlineAnalysis,
       seriesName: seriesName ?? this.seriesName,
       linkedSpeechId: linkedSpeechId ?? this.linkedSpeechId,
+      userNote: clearUserNote ? null : (userNote ?? this.userNote),
+      speakerName:
+          clearSpeakerName ? null : (speakerName ?? this.speakerName),
     );
   }
 
@@ -100,6 +116,8 @@ class VoiceRehearsalAttempt {
           : null,
       seriesName: json['seriesName']?.toString(),
       linkedSpeechId: json['linkedSpeechId']?.toString(),
+      userNote: json['userNote']?.toString(),
+      speakerName: json['speakerName']?.toString(),
     );
   }
 }

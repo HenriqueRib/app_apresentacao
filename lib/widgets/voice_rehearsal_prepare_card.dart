@@ -6,13 +6,14 @@ import '../models/voice_rehearsal_session_prefs.dart';
 import '../models/speech.dart';
 import '../providers/speech_provider.dart';
 import '../providers/voice_rehearsal_provider.dart';
-import '../screens/tools/bet_guide/voice_volume_test_screen.dart';
+import '../utils/voice_rehearsal_navigation.dart';
 import 'voice_rehearsal_smart_flags_panel.dart';
 
 /// Painel único antes do ensaio: metas, foco, volume e tema.
 class VoiceRehearsalPrepareCard extends StatelessWidget {
   final TextEditingController topicController;
   final TextEditingController? seriesController;
+  final TextEditingController? speakerController;
   final double? bestScore;
   final ValueChanged<String>? onTopicChanged;
 
@@ -20,6 +21,7 @@ class VoiceRehearsalPrepareCard extends StatelessWidget {
     super.key,
     required this.topicController,
     this.seriesController,
+    this.speakerController,
     this.bestScore,
     this.onTopicChanged,
   });
@@ -123,11 +125,7 @@ class VoiceRehearsalPrepareCard extends StatelessWidget {
                         color: AppTheme.warningColor,
                         text: 'Calibre o volume para alertas mais precisos.',
                         action: 'Testar',
-                        onAction: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const VoiceVolumeTestScreen(),
-                          ),
-                        ),
+                        onAction: () => openVoiceVolumeTest(context),
                       ),
                     if (needsGoal)
                       const _HintRow(
@@ -173,6 +171,25 @@ class VoiceRehearsalPrepareCard extends StatelessWidget {
                         ),
                       ),
                       style: const TextStyle(fontSize: 13),
+                    ),
+                  ],
+                  if (speakerController != null) ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: speakerController,
+                      onChanged: provider.setSpeakerName,
+                      decoration: const InputDecoration(
+                        labelText: 'Quem está falando (opcional)',
+                        hintText: 'Ex.: Irmão João / Irmã Maria',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                      ),
+                      style: const TextStyle(fontSize: 13),
+                      textCapitalization: TextCapitalization.words,
                     ),
                   ],
                   const SizedBox(height: 12),

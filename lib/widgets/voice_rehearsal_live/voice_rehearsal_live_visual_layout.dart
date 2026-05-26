@@ -203,6 +203,7 @@ class _LiveTabbedContent extends StatelessWidget {
           if (ctx.isRecording && ctx.topInsight != null)
             VoiceCoachingFocusBanner(
               topInsight: ctx.topInsight,
+              carryOverLabel: ctx.carryOverLabel,
               onTap: ctx.onScrollToFirstInsight,
             ),
           Expanded(

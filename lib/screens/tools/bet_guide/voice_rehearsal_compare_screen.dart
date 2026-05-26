@@ -4,20 +4,30 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/voice_rehearsal_attempt.dart';
 import '../../../utils/voice_rehearsal_ui.dart';
 
-/// Comparação lado a lado de duas tentativas do histórico.
+/// Comparação de 2–4 tentativas do histórico (tabela + cabeçalhos).
 class VoiceRehearsalCompareScreen extends StatelessWidget {
-  final VoiceRehearsalAttempt older;
-  final VoiceRehearsalAttempt newer;
+  final List<VoiceRehearsalAttempt> attempts;
 
   const VoiceRehearsalCompareScreen({
     super.key,
-    required this.older,
-    required this.newer,
+    required this.attempts,
   });
 
   @override
   Widget build(BuildContext context) {
-    final scoreDelta = newer.finalScore - older.finalScore;
+    final sorted = List<VoiceRehearsalAttempt>.from(attempts)
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (sorted.length < 2) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Comparar ensaios')),
+        body: const Center(child: Text('Selecione ao menos 2 ensaios.')),
+      );
+    }
+
+    final first = sorted.first;
+    final last = sorted.last;
+    final scoreDelta = last.finalScore - first.finalScore;
     final deltaColor = scoreDelta > 0.05
         ? AppTheme.accentColor
         : scoreDelta < -0.05
@@ -26,12 +36,35 @@ class VoiceRehearsalCompareScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Comparar ensaios'),
+        title: Text('Comparar ${sorted.length} ensaios'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _CompareHeader(older: older, newer: newer),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < sorted.length; i++) ...[
+                  if (i > 0)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 40),
+                      child: Icon(Icons.arrow_forward,
+                          size: 16, color: AppTheme.textSecondary),
+                    ),
+                  _AttemptCard(
+                    attempt: sorted[i],
+                    label: i == 0
+                        ? 'Mais antigo'
+                        : i == sorted.length - 1
+                            ? 'Mais recente'
+                            : 'Meio ${i + 1}',
+                  ),
+                ],
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           Card(
             child: Padding(
@@ -45,7 +78,7 @@ class VoiceRehearsalCompareScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _scoreDeltaLabel(scoreDelta),
+                      _scoreDeltaLabel(scoreDelta, sorted.length),
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: deltaColor,
@@ -57,43 +90,25 @@ class VoiceRehearsalCompareScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _CompareTable(older: older, newer: newer),
+          _CompareTable(attempts: sorted),
         ],
       ),
     );
   }
 
-  String _scoreDeltaLabel(double delta) {
+  String _scoreDeltaLabel(double delta, int count) {
+    if (count == 2) {
+      if (delta.abs() < 0.05) {
+        return 'Notas equivalentes entre os dois ensaios.';
+      }
+      final sign = delta > 0 ? '+' : '';
+      return 'O ensaio mais recente ficou $sign${delta.toStringAsFixed(1)} na nota.';
+    }
     if (delta.abs() < 0.05) {
-      return 'Notas equivalentes entre os dois ensaios.';
+      return 'Nota do mais recente equivalente ao mais antigo.';
     }
     final sign = delta > 0 ? '+' : '';
-    return 'O ensaio mais recente ficou $sign${delta.toStringAsFixed(1)} na nota.';
-  }
-}
-
-class _CompareHeader extends StatelessWidget {
-  final VoiceRehearsalAttempt older;
-  final VoiceRehearsalAttempt newer;
-
-  const _CompareHeader({
-    required this.older,
-    required this.newer,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: _AttemptCard(attempt: older, label: 'Anterior')),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 40),
-          child: Icon(Icons.compare_arrows, color: AppTheme.textSecondary),
-        ),
-        Expanded(child: _AttemptCard(attempt: newer, label: 'Mais recente')),
-      ],
-    );
+    return 'Do mais antigo ao mais recente: $sign${delta.toStringAsFixed(1)} na nota.';
   }
 }
 
@@ -110,52 +125,51 @@ class _AttemptCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = voiceRehearsalScoreColor(attempt.finalScore);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textSecondary,
+    return SizedBox(
+      width: 140,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textSecondary,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              attempt.finalScore.toStringAsFixed(1),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: color,
+              const SizedBox(height: 8),
+              Text(
+                attempt.finalScore.toStringAsFixed(1),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
               ),
-            ),
-            Text(
-              'nota / 10',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              attempt.listTitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              formatVoiceRehearsalDateTime(attempt.createdAt),
-              style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
-            ),
-            Text(
-              attempt.modeLabel,
-              style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
-            ),
-          ],
+              Text(
+                'nota / 10',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                attempt.listTitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                formatVoiceRehearsalDateTime(attempt.createdAt),
+                style: TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -163,123 +177,117 @@ class _AttemptCard extends StatelessWidget {
 }
 
 class _CompareTable extends StatelessWidget {
-  final VoiceRehearsalAttempt older;
-  final VoiceRehearsalAttempt newer;
+  final List<VoiceRehearsalAttempt> attempts;
 
-  const _CompareTable({
-    required this.older,
-    required this.newer,
-  });
+  const _CompareTable({required this.attempts});
 
   @override
   Widget build(BuildContext context) {
-    final o = older.summary.metrics;
-    final n = newer.summary.metrics;
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           children: [
-            _row(
+            _headerRow(),
+            _metricRow(
               'Duração',
-              _formatDuration(older.durationSeconds),
-              _formatDuration(newer.durationSeconds),
-              newer.durationSeconds - older.durationSeconds,
-              suffix: 's',
-              lowerIsBetter: false,
+              attempts.map((a) => _formatDuration(a.durationSeconds)).toList(),
             ),
-            _row(
+            _metricRow(
               'WPM',
-              o.wpm > 0 ? o.wpm.toStringAsFixed(0) : '—',
-              n.wpm > 0 ? n.wpm.toStringAsFixed(0) : '—',
-              (n.wpm - o.wpm).round(),
+              attempts
+                  .map((a) => a.summary.metrics.wpm > 0
+                      ? a.summary.metrics.wpm.toStringAsFixed(0)
+                      : '—')
+                  .toList(),
             ),
-            _row(
+            _metricRow(
               'Palavras',
-              '${o.wordCount}',
-              '${n.wordCount}',
-              n.wordCount - o.wordCount,
+              attempts
+                  .map((a) => '${a.summary.metrics.wordCount}')
+                  .toList(),
             ),
-            _row(
+            _metricRow(
               'Muletas',
-              '${o.fillerCount}',
-              '${n.fillerCount}',
-              n.fillerCount - o.fillerCount,
-              lowerIsBetter: true,
+              attempts
+                  .map((a) => '${a.summary.metrics.fillerCount}')
+                  .toList(),
             ),
-            _row(
+            _metricRow(
               'Pausas longas',
-              '${o.longPauseCount}',
-              '${n.longPauseCount}',
-              n.longPauseCount - o.longPauseCount,
-              lowerIsBetter: true,
+              attempts
+                  .map((a) => '${a.summary.metrics.longPauseCount}')
+                  .toList(),
             ),
+            if (attempts.any(
+              (a) => a.summary.outlineCoveragePercent != null,
+            ))
+              _metricRow(
+                'Esboço',
+                attempts
+                    .map((a) => a.summary.outlineCoveragePercent != null
+                        ? '${a.summary.outlineCoveragePercent!.round()}%'
+                        : '—')
+                    .toList(),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _row(
-    String label,
-    String left,
-    String right,
-    int delta, {
-    String suffix = '',
-    bool lowerIsBetter = false,
-  }) {
-    Color? deltaColor;
-    String? deltaText;
-    if (delta != 0) {
-      final improved = lowerIsBetter ? delta < 0 : delta > 0;
-      deltaColor = improved ? AppTheme.accentColor : AppTheme.warningColor;
-      final sign = delta > 0 ? '+' : '';
-      deltaText = '$sign$delta$suffix';
-    }
-
+  Widget _headerRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           Expanded(
+            flex: 2,
             child: Text(
-              left,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              'Métrica',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textSecondary,
+              ),
             ),
           ),
+          for (var i = 0; i < attempts.length; i++)
+            Expanded(
+              child: Text(
+                '${i + 1}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metricRow(String label, List<String> values) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
           Expanded(
             flex: 2,
-            child: Column(
-              children: [
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                if (deltaText != null)
-                  Text(
-                    deltaText,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: deltaColor,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
             child: Text(
-              right,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              label,
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
             ),
           ),
+          for (final value in values)
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
         ],
       ),
     );

@@ -161,6 +161,25 @@ class SpeechProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Speech? findSpeechById(String? id) {
+    if (id == null || id.isEmpty) return null;
+    for (final speech in _speeches) {
+      if (speech.id == id) return speech;
+    }
+    return null;
+  }
+
+  Future<Speech?> findSpeechByIdAsync(String? id) async {
+    final cached = findSpeechById(id);
+    if (cached != null) return cached;
+    if (id == null || id.isEmpty) return null;
+    if (_speeches.isEmpty) {
+      final storage = await StorageService.getInstance();
+      _speeches = await storage.getSpeeches();
+    }
+    return findSpeechById(id);
+  }
+
   Future<void> updateOutline(String speechId, SpeechOutline outline) async {
     final index = _speeches.indexWhere((s) => s.id == speechId);
     if (index != -1) {

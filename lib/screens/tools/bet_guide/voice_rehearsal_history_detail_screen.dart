@@ -6,11 +6,14 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../models/voice_rehearsal_attempt.dart';
 import '../../../models/voice_rehearsal_report_view_mode.dart';
+import '../../../providers/speech_provider.dart';
 import '../../../providers/voice_rehearsal_history_provider.dart';
+import '../../../screens/planning/speech_planning_details_screen.dart';
 import '../../../services/storage_service.dart';
 import '../../../services/voice_rehearsal_online_payload_builder.dart';
 import '../../../services/voice_rehearsal_online_service.dart';
 import '../../../services/voice_rehearsal_report_exporter.dart';
+import '../../../services/voice_rehearsal_report_pdf_exporter.dart';
 import '../../../widgets/voice_rehearsal_report/voice_rehearsal_report_context.dart';
 import '../../../widgets/voice_rehearsal_report/voice_rehearsal_report_minimal_view.dart';
 import '../../../widgets/voice_rehearsal_report/voice_rehearsal_report_visual_view.dart';
@@ -34,13 +37,21 @@ class _VoiceRehearsalHistoryDetailScreenState
   bool _loading = true;
   bool _onlineHelpEnabled = false;
   bool _analyzingOnline = false;
+  bool _savingNote = false;
   VoiceRehearsalReportViewMode _viewMode = VoiceRehearsalReportViewMode.minimal;
   final _onlineService = VoiceRehearsalOnlineService();
+  final _noteController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadAttempt();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAttempt() async {
@@ -55,6 +66,28 @@ class _VoiceRehearsalHistoryDetailScreenState
         _viewMode = viewMode;
         _loading = false;
       });
+      _noteController.text = attempt?.userNote ?? '';
+    }
+  }
+
+  Future<void> _saveUserNote() async {
+    if (_savingNote) return;
+    setState(() => _savingNote = true);
+    try {
+      await context.read<VoiceRehearsalHistoryProvider>().updateUserNote(
+            widget.attemptId,
+            _noteController.text,
+          );
+      final storage = await StorageService.getInstance();
+      final updated = await storage.getVoiceRehearsalAttemptById(widget.attemptId);
+      if (mounted && updated != null) {
+        setState(() => _attempt = updated);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nota salva.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingNote = false);
     }
   }
 
@@ -126,6 +159,39 @@ class _VoiceRehearsalHistoryDetailScreenState
     if (mounted) setState(() => _viewMode = mode);
   }
 
+  Future<void> _exportPdf(VoiceRehearsalAttempt attempt) async {
+    try {
+      final file = await VoiceRehearsalReportPdfExporter.writeToTempFile(attempt);
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/pdf')],
+        subject: 'Ensaio be-T — ${attempt.listTitle}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao gerar PDF: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openLinkedOutline(String speechId) async {
+    final speech =
+        await context.read<SpeechProvider>().findSpeechByIdAsync(speechId);
+    if (!mounted) return;
+    if (speech == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Discurso vinculado não encontrado.')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SpeechPlanningDetailsScreen(speech: speech),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -150,9 +216,20 @@ class _VoiceRehearsalHistoryDetailScreenState
       appBar: AppBar(
         title: const Text('Relatório do ensaio'),
         actions: [
+          if (attempt.linkedSpeechId != null)
+            IconButton(
+              icon: const Icon(Icons.auto_stories_outlined),
+              tooltip: 'Abrir esboço',
+              onPressed: () => _openLinkedOutline(attempt.linkedSpeechId!),
+            ),
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            tooltip: 'Exportar PDF',
+            onPressed: () => _exportPdf(attempt),
+          ),
           IconButton(
             icon: const Icon(Icons.ios_share),
-            tooltip: 'Exportar relatório',
+            tooltip: 'Exportar texto',
             onPressed: () {
               Share.share(
                 VoiceRehearsalReportExporter.toPlainText(attempt),
@@ -206,17 +283,71 @@ class _VoiceRehearsalHistoryDetailScreenState
         builder: (context, provider, _) {
           final ctx = _buildContext(attempt, provider);
 
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _viewMode == VoiceRehearsalReportViewMode.minimal
-                ? VoiceRehearsalReportMinimalView(
-                    key: const ValueKey('minimal'),
-                    ctx: ctx,
-                  )
-                : VoiceRehearsalReportVisualView(
-                    key: const ValueKey('visual'),
-                    ctx: ctx,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Minha nota sobre este ensaio',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _noteController,
+                          maxLines: 3,
+                          minLines: 2,
+                          decoration: const InputDecoration(
+                            hintText:
+                                'Ex.: focar menos em muletas na introdução…',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: FilledButton.tonal(
+                            onPressed: _savingNote ? null : _saveUserNote,
+                            child: _savingNote
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Salvar nota'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ),
+              ),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _viewMode == VoiceRehearsalReportViewMode.minimal
+                      ? VoiceRehearsalReportMinimalView(
+                          key: const ValueKey('minimal'),
+                          ctx: ctx,
+                        )
+                      : VoiceRehearsalReportVisualView(
+                          key: const ValueKey('visual'),
+                          ctx: ctx,
+                        ),
+                ),
+              ),
+            ],
           );
         },
       ),

@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../voice_coaching_tip_card.dart';
 import '../voice_online_analysis_section.dart';
 import '../voice_rehearsal_report_section.dart';
+import '../voice_shinyashiki_feedback_section.dart';
 import '../voice_s315_feedback_section.dart';
 import 'voice_rehearsal_characteristic_bars.dart';
 import 'voice_rehearsal_metric_tile.dart';
@@ -136,6 +137,13 @@ class _VoiceRehearsalReportVisualViewState
             durationSeconds: attempt.durationSeconds,
             hasRecording: ctx.hasRecording,
             onlineS315: attempt.onlineAnalysis?.s315Enriquecido,
+            dense: true,
+          ),
+        ),
+        _SectionCard(
+          title: 'Feedback do Roberto Shinyashiki',
+          child: VoiceShinyashikiFeedbackSection(
+            summary: attempt.summary,
             dense: true,
           ),
         ),

@@ -10,10 +10,12 @@ import 'assessment_history_screen.dart';
 
 class SelfAssessmentScreen extends StatefulWidget {
   final int? focusCharacteristicId;
+  final List<int>? highlightCharacteristicIds;
 
   const SelfAssessmentScreen({
     super.key,
     this.focusCharacteristicId,
+    this.highlightCharacteristicIds,
   });
 
   @override
@@ -28,6 +30,9 @@ class _SelfAssessmentScreenState extends State<SelfAssessmentScreen> {
   @override
   void initState() {
     super.initState();
+    for (final id in widget.highlightCharacteristicIds ?? const []) {
+      _scores[id] = AssessmentLevel.partial;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<OratoryGuideProvider>().load();
       _scrollToFocus();
@@ -41,7 +46,10 @@ class _SelfAssessmentScreenState extends State<SelfAssessmentScreen> {
   }
 
   void _scrollToFocus() {
-    final focusId = widget.focusCharacteristicId;
+    final focusId = widget.focusCharacteristicId ??
+        (widget.highlightCharacteristicIds?.isNotEmpty == true
+            ? widget.highlightCharacteristicIds!.first
+            : null);
     if (focusId == null) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -85,6 +93,10 @@ class _SelfAssessmentScreenState extends State<SelfAssessmentScreen> {
     final chars = CharacteristicsService.instance.allCharacteristics;
     final competencies = CharacteristicsService.instance.allCompetencies;
     final focusId = widget.focusCharacteristicId;
+    final highlightIds = {
+      ...?widget.highlightCharacteristicIds,
+      if (focusId != null) focusId,
+    };
     OratoryCharacteristic? focusChar;
     if (focusId != null) {
       focusChar = CharacteristicsService.instance.getCharacteristicById(focusId);
@@ -110,18 +122,22 @@ class _SelfAssessmentScreenState extends State<SelfAssessmentScreen> {
       ),
       body: Column(
         children: [
-          if (focusChar != null)
+          if (highlightIds.isNotEmpty)
             Container(
               width: double.infinity,
               color: AppTheme.warningColor.withValues(alpha: 0.12),
               padding: const EdgeInsets.all(12),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.mic, color: AppTheme.warningColor, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Detectado no ensaio — avalie: #${focusChar.id} ${focusChar.title}',
+                      highlightIds.length == 1 && focusChar != null
+                          ? 'Detectado no ensaio — avalie: #${focusChar.id} ${focusChar.title}'
+                          : 'Do ensaio — priorize avaliar: '
+                              '${highlightIds.map((id) => '#$id').join(', ')}',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -186,7 +202,7 @@ class _SelfAssessmentScreenState extends State<SelfAssessmentScreen> {
               itemBuilder: (context, index) {
                 final char = chars[index];
                 final level = _scores[char.id] ?? AssessmentLevel.notYet;
-                final isFocus = char.id == focusId;
+                final isFocus = highlightIds.contains(char.id);
                 return Card(
                   key: _itemKeys[char.id],
                   margin: const EdgeInsets.only(bottom: 8),

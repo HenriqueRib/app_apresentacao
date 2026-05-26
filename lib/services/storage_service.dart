@@ -14,6 +14,7 @@ import '../models/voice_recording.dart';
 import '../models/voice_rehearsal_attempt.dart';
 import '../models/voice_rehearsal_report_view_mode.dart';
 import '../models/voice_rehearsal_session_prefs.dart';
+import '../models/voice_rehearsal_streak.dart';
 import '../models/voice_rehearsal_smart_flags.dart';
 import '../models/voice_rehearsal_next_focus.dart';
 import '../models/voice_rehearsal_weekly_goal.dart';
@@ -53,6 +54,11 @@ class StorageService {
       'voice_rehearsal_weekly_goal';
   static const String _voiceRehearsalLinkedSpeechIdKey =
       'voice_rehearsal_linked_speech_id';
+  static const String _voiceRehearsalOnboardingKey =
+      'voice_rehearsal_onboarding_done';
+  static const String _voiceRehearsalStreakKey = 'voice_rehearsal_streak';
+  static const String _voiceRehearsalBlockPracticeIndexKey =
+      'voice_rehearsal_block_practice_index';
   static const int _maxVoiceRehearsalHistory = 100;
 
   static StorageService? _instance;
@@ -629,6 +635,49 @@ class StorageService {
       return;
     }
     await _prefs.setString(_voiceRehearsalLinkedSpeechIdKey, speechId);
+  }
+
+  Future<bool> isVoiceRehearsalOnboardingDone() async {
+    return _prefs.getBool(_voiceRehearsalOnboardingKey) ?? false;
+  }
+
+  Future<void> setVoiceRehearsalOnboardingDone(bool value) async {
+    await _prefs.setBool(_voiceRehearsalOnboardingKey, value);
+  }
+
+  Future<VoiceRehearsalStreak> getVoiceRehearsalStreak() async {
+    final raw = _prefs.getString(_voiceRehearsalStreakKey);
+    if (raw == null) return const VoiceRehearsalStreak();
+    try {
+      return VoiceRehearsalStreak.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return const VoiceRehearsalStreak();
+    }
+  }
+
+  Future<VoiceRehearsalStreak> recordVoiceRehearsalStreak({
+    required int durationSeconds,
+  }) async {
+    final current = await getVoiceRehearsalStreak();
+    final updated = current.recordSession(
+      DateTime.now(),
+      minSeconds: durationSeconds,
+    );
+    await _prefs.setString(
+      _voiceRehearsalStreakKey,
+      jsonEncode(updated.toJson()),
+    );
+    return updated;
+  }
+
+  Future<int> getVoiceRehearsalBlockPracticeIndex() async {
+    return _prefs.getInt(_voiceRehearsalBlockPracticeIndexKey) ?? 0;
+  }
+
+  Future<void> setVoiceRehearsalBlockPracticeIndex(int index) async {
+    await _prefs.setInt(_voiceRehearsalBlockPracticeIndexKey, index);
   }
 
   /// Tentativas com `createdAt` na semana ISO atual (segunda a domingo).

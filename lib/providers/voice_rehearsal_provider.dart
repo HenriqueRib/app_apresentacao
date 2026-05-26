@@ -13,9 +13,9 @@ import '../models/speech.dart';
 import '../models/voice_rehearsal.dart';
 import '../models/voice_rehearsal_attempt.dart';
 import '../models/voice_rehearsal_next_focus.dart';
+import '../models/voice_rehearsal_streak.dart';
 import '../models/voice_rehearsal_session_prefs.dart';
 import '../models/voice_rehearsal_smart_flags.dart';
-import '../models/voice_rehearsal_weekly_goal.dart';
 import '../models/voice_recording.dart';
 import '../models/voice_teleprompter_section.dart';
 import '../models/voice_volume_calibration.dart';
@@ -24,6 +24,7 @@ import '../services/storage_service.dart';
 import '../services/voice_analysis_engine.dart';
 import '../services/voice_coach_focus_filter.dart';
 import '../services/voice_filler_words_service.dart';
+import '../services/voice_outline_coverage_analyzer.dart';
 import '../services/voice_outline_teleprompter_builder.dart';
 import '../services/voice_rehearsal_topic_helper.dart';
 import '../services/voice_recording_transcriber.dart';
@@ -60,6 +61,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
   bool _sttRestartInProgress = false;
   DateTime? _lastSttRestartAt;
   String? _sessionTopic;
+  String? _speakerName;
   VoiceVolumeCalibration? _volumeCalibration;
   bool _isAnalyzingRecording = false;
   bool _isPaused = false;
@@ -73,6 +75,9 @@ class VoiceRehearsalProvider extends ChangeNotifier {
   String? _seriesName;
   String? _linkedSpeechId;
   List<VoiceTeleprompterSection> _teleprompterSections = const [];
+  int _teleprompterActiveIndex = 0;
+  int _blockPracticeIndex = 0;
+  VoiceRehearsalStreak _streak = const VoiceRehearsalStreak();
   String? _sessionMilestoneBanner;
   String? _smartPauseBanner;
   final Set<String> _firedMilestones = {};
@@ -90,6 +95,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
 
   VoiceRehearsalState get state => _state;
   String? get sessionTopic => _sessionTopic;
+  String? get speakerName => _speakerName;
   VoiceSessionMode? get sessionMode => _sessionMode;
   bool get hasMicPermission => _hasMicPermission;
   bool get speechAvailable => _speechAvailable;
@@ -109,6 +115,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
         _liveEvents,
         coachFocusEnabled: _smartFlags.coachFocusEnabled,
         mode: _smartFlags.coachFocusMode,
+        silentCoach: _smartFlags.silentCoachEnabled && isRecording,
       );
   List<VoiceImprovementInsight> get filteredInsights =>
       VoiceCoachFocusFilter.filterInsights(
@@ -116,6 +123,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
         coachFocusEnabled: _smartFlags.coachFocusEnabled,
         mode: _smartFlags.coachFocusMode,
         minimalCoach: _smartFlags.minimalCoachEnabled,
+        silentCoach: _smartFlags.silentCoachEnabled && isRecording,
       );
   String get fullTranscript => _engine.fullTranscript;
   bool get isRecording => _state == VoiceRehearsalState.recording;
@@ -127,6 +135,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
   bool get focusMode => _sessionPrefs.focusMode;
   bool get hasVolumeCalibration => _volumeCalibration != null;
   VoiceRehearsalSmartFlags get smartFlags => _smartFlags;
+  VoiceRehearsalStreak get rehearsalStreak => _streak;
   VoiceRehearsalNextFocus? get nextFocus => _nextFocus;
   VoiceSessionPhase get sessionPhase => _sessionPhase;
   bool get isWarmupPhase => _isWarmupPhase;
@@ -138,6 +147,42 @@ class VoiceRehearsalProvider extends ChangeNotifier {
   String? get linkedSpeechId => _linkedSpeechId;
   List<VoiceTeleprompterSection> get teleprompterSections =>
       _teleprompterSections;
+  int get teleprompterActiveIndex => _teleprompterActiveIndex;
+  int get blockPracticeIndex => _blockPracticeIndex;
+
+  /// Blocos visíveis no roteiro (um só se treino por bloco).
+  List<VoiceTeleprompterSection> get sessionTeleprompterSections {
+    if (!_smartFlags.blockPracticeEnabled || _teleprompterSections.isEmpty) {
+      return _teleprompterSections;
+    }
+    final idx =
+        _blockPracticeIndex.clamp(0, _teleprompterSections.length - 1);
+    return [_teleprompterSections[idx]];
+  }
+
+  Future<void> setBlockPracticeIndex(int index) async {
+    if (_teleprompterSections.isEmpty) return;
+    _blockPracticeIndex =
+        index.clamp(0, _teleprompterSections.length - 1);
+    _teleprompterActiveIndex = _blockPracticeIndex;
+    final storage = await StorageService.getInstance();
+    await storage.setVoiceRehearsalBlockPracticeIndex(_blockPracticeIndex);
+    _notifyAll();
+  }
+
+  void advanceTeleprompterBlock() {
+    if (_teleprompterSections.isEmpty) return;
+    if (_teleprompterActiveIndex < _teleprompterSections.length - 1) {
+      _teleprompterActiveIndex++;
+      _notifyContent();
+    }
+  }
+
+  void selectTeleprompterBlock(int index) {
+    if (index < 0 || index >= _teleprompterSections.length) return;
+    _teleprompterActiveIndex = index;
+    _notifyContent();
+  }
 
   void setSeriesName(String? name) {
     final trimmed = name?.trim();
@@ -151,9 +196,17 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     _notifyAll();
   }
 
+  void setSpeakerName(String? name) {
+    final trimmed = name?.trim();
+    _speakerName = trimmed != null && trimmed.isNotEmpty ? trimmed : null;
+    _notifyAll();
+  }
+
   Future<void> loadSessionPrefs() async {
     final storage = await StorageService.getInstance();
     _sessionPrefs = await storage.getVoiceRehearsalSessionPrefs();
+    _blockPracticeIndex = await storage.getVoiceRehearsalBlockPracticeIndex();
+    _streak = await storage.getVoiceRehearsalStreak();
     await loadSmartFlags();
     _notifyAll();
   }
@@ -187,6 +240,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     if (speech == null) {
       _linkedSpeechId = null;
       _teleprompterSections = const [];
+      _teleprompterActiveIndex = 0;
       await storage.setVoiceRehearsalLinkedSpeechId(null);
       _notifyAll();
       return;
@@ -194,6 +248,11 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     _linkedSpeechId = speech.id;
     _teleprompterSections =
         VoiceOutlineTeleprompterBuilder.fromOutline(speech.outline);
+    _blockPracticeIndex = (await storage.getVoiceRehearsalBlockPracticeIndex())
+        .clamp(0, _teleprompterSections.isEmpty ? 0 : _teleprompterSections.length - 1);
+    _teleprompterActiveIndex = _smartFlags.blockPracticeEnabled
+        ? _blockPracticeIndex
+        : 0;
     final topic = speech.title.trim().isNotEmpty
         ? speech.title.trim()
         : speech.theme.trim();
@@ -353,6 +412,13 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     return _hasMicPermission;
   }
 
+  /// Atualiza calibração após voltar do teste de volume (sem reinicializar STT).
+  Future<void> refreshVolumeCalibration() async {
+    final storage = await StorageService.getInstance();
+    _volumeCalibration = await storage.getVolumeCalibration();
+    _notifyAll();
+  }
+
   Future<VoiceSessionCheckpoint?> loadCheckpoint() =>
       VoiceSessionCheckpoint.load();
 
@@ -410,6 +476,12 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     _sessionMode = mode;
     _sessionActive = true;
     _isPaused = false;
+    if (_smartFlags.blockPracticeEnabled && _teleprompterSections.isNotEmpty) {
+      _teleprompterActiveIndex =
+          _blockPracticeIndex.clamp(0, _teleprompterSections.length - 1);
+    } else {
+      _teleprompterActiveIndex = 0;
+    }
 
     await WakelockPlus.enable();
     await VoiceSessionCheckpoint.clear();
@@ -470,7 +542,9 @@ class VoiceRehearsalProvider extends ChangeNotifier {
 
     _engine.tick(Duration(seconds: _elapsedSeconds));
     _engine.flushLiveAnalysis(topic: _sessionTopic);
-    _summary = _engine.buildSummary(topic: _sessionTopic);
+    _summary = _enrichSummaryWithCoverage(
+      _engine.buildSummary(topic: _sessionTopic),
+    );
     _state = VoiceRehearsalState.stopped;
     _sessionPhase = VoiceSessionPhase.stopped;
     _isWarmupPhase = false;
@@ -501,6 +575,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     }
 
     _sessionTopic = null;
+    _speakerName = null;
     await VoiceSessionCheckpoint.clear();
     _notifyAll();
   }
@@ -522,6 +597,7 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     _elapsedSeconds = 0;
     _sessionMode = null;
     _sessionTopic = null;
+    _speakerName = null;
     _isPaused = false;
     _state = VoiceRehearsalState.idle;
     _sessionPhase = VoiceSessionPhase.idle;
@@ -558,6 +634,18 @@ class VoiceRehearsalProvider extends ChangeNotifier {
     await storage.setVoiceRehearsalNextFocus(focus);
   }
 
+  VoiceRehearsalSummary _enrichSummaryWithCoverage(
+    VoiceRehearsalSummary summary,
+  ) {
+    if (_teleprompterSections.isEmpty) return summary;
+    final result = VoiceOutlineCoverageAnalyzer.analyze(
+      sections: sessionTeleprompterSections,
+      transcript: summary.fullTranscript,
+    );
+    if (result.total == 0) return summary;
+    return summary.copyWith(outlineCoveragePercent: result.percent);
+  }
+
   Future<void> _persistAttempt(
     VoiceRehearsalSummary summary,
     String attemptId,
@@ -582,8 +670,12 @@ class VoiceRehearsalProvider extends ChangeNotifier {
             : null,
         seriesName: _seriesName,
         linkedSpeechId: _linkedSpeechId,
+        speakerName: _speakerName,
       );
       await storage.addVoiceRehearsalAttempt(attempt);
+      _streak = await storage.recordVoiceRehearsalStreak(
+        durationSeconds: _elapsedSeconds,
+      );
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Erro ao salvar histórico: $e');
@@ -606,10 +698,12 @@ class VoiceRehearsalProvider extends ChangeNotifier {
 
       _engine.reset();
       await _loadFillerWords();
-      _summary = _engine.buildSummaryFromTranscript(
-        transcript: transcript,
-        elapsedSeconds: durationSeconds,
-        topic: topic,
+      _summary = _enrichSummaryWithCoverage(
+        _engine.buildSummaryFromTranscript(
+          transcript: transcript,
+          elapsedSeconds: durationSeconds,
+          topic: topic,
+        ),
       );
 
       final storage = await StorageService.getInstance();
@@ -628,19 +722,13 @@ class VoiceRehearsalProvider extends ChangeNotifier {
       if (attemptIdx != -1) {
         final old = attempts[attemptIdx];
         await storage.updateVoiceRehearsalAttempt(
-          VoiceRehearsalAttempt(
-            id: old.id,
-            createdAt: old.createdAt,
-            mode: old.mode,
-            durationSeconds: old.durationSeconds,
+          old.copyWith(
             finalScore: _summary!.metrics.liveScore,
-            topic: old.topic,
             subjectPreview: VoiceRehearsalTopicHelper.buildSubjectPreview(
               userTopic: old.topic,
               transcript: transcript,
             ),
             summary: _summary!,
-            recordingFilePath: old.recordingFilePath,
           ),
         );
       }
@@ -878,9 +966,9 @@ class VoiceRehearsalProvider extends ChangeNotifier {
               if (!_sessionActive || _teardownInProgress || _isPaused) {
                 return;
               }
-              final pseudoDb = _adjustVolume(-50 + (level * 30));
-              _engine.recordAmplitudeSample(pseudoDb);
-              _notifyMetrics();
+              final pseudoDb = _adjustVolume(_soundLevelToDb(level));
+              final events = _engine.onAmplitude(pseudoDb);
+              _appendLiveEvents(events, debounceUi: true);
             }
           : null,
       listenOptions: stt.SpeechListenOptions(
@@ -958,6 +1046,24 @@ class VoiceRehearsalProvider extends ChangeNotifier {
 
   double _adjustVolume(double rawDb) =>
       applyCalibration(rawDb, _volumeCalibration);
+
+  /// Converte `SpeechToText` sound level em um dB aproximado (offline-first).
+  /// O plugin varia por plataforma; este mapeamento tenta se manter estável
+  /// no intervalo útil do motor (-45 a -5 dB).
+  double _soundLevelToDb(double level) {
+    if (level.isNaN || level.isInfinite) return VoiceAnalysisThresholds.silenceDb;
+
+    // Heurística: alguns dispositivos retornam 0..1, outros 0..10, outros 0..100.
+    final normalized = level <= 1.2
+        ? (level.clamp(0.0, 1.0) * 10.0)
+        : level <= 12
+            ? level.clamp(0.0, 10.0)
+            : (level.clamp(0.0, 100.0) / 10.0);
+
+    // 0..10 -> -45..-5 (mais “vivo” que -50..-20).
+    final t = (normalized / 10.0).clamp(0.0, 1.0);
+    return -45 + (t * 40);
+  }
 
   void _appendLiveEvents(
     List<VoiceFeedbackEvent> events, {

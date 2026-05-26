@@ -20,6 +20,7 @@ class VoiceRehearsalFocusLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showGoal = ctx.durationGoalSeconds != null;
+    final hideScore = ctx.hideScore;
 
     return Expanded(
       child: ColoredBox(
@@ -27,14 +28,19 @@ class VoiceRehearsalFocusLayout extends StatelessWidget {
         child: Column(
           children: [
             const Spacer(flex: 2),
-            VoiceRehearsalScoreGauge(
-              score: ctx.score,
-              color: ctx.scoreColor,
-              size: 120,
+            Semantics(
+              label: hideScore
+                  ? 'Nota oculta durante aquecimento'
+                  : 'Nota ${ctx.score.toStringAsFixed(1)} de 10',
+              child: VoiceRehearsalScoreGauge(
+                score: hideScore ? 0 : ctx.score,
+                color: hideScore ? AppTheme.textSecondary : ctx.scoreColor,
+                size: 120,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
-              ctx.score.toStringAsFixed(1),
+              hideScore ? '—' : ctx.score.toStringAsFixed(1),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -75,6 +81,7 @@ class VoiceRehearsalFocusLayout extends StatelessWidget {
             if (ctx.topInsight != null)
               VoiceCoachingFocusBanner(
                 topInsight: ctx.topInsight,
+                carryOverLabel: ctx.carryOverLabel,
                 onTap: onScrollToInsight,
               ),
             if (ctx.isRecording && !ctx.isPaused)

@@ -43,6 +43,22 @@ class VoiceRehearsalHistoryProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateUserNote(String id, String? note) async {
+    final index = _attempts.indexWhere((a) => a.id == id);
+    if (index == -1) return;
+
+    final trimmed = note?.trim();
+    final updated = _attempts[index].copyWith(
+      userNote: trimmed != null && trimmed.isNotEmpty ? trimmed : null,
+      clearUserNote: trimmed == null || trimmed.isEmpty,
+    );
+
+    final storage = await StorageService.getInstance();
+    await storage.updateVoiceRehearsalAttempt(updated);
+    _attempts[index] = updated;
+    notifyListeners();
+  }
+
   Future<void> delete(String id) async {
     final attempt = _attempts.where((a) => a.id == id).firstOrNull;
     if (attempt == null) return;

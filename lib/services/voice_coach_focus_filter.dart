@@ -47,7 +47,9 @@ class VoiceCoachFocusFilter {
     required bool coachFocusEnabled,
     required CoachFocusMode mode,
     required bool minimalCoach,
+    bool silentCoach = false,
   }) {
+    if (silentCoach) return const [];
     var list = insights;
     if (coachFocusEnabled && mode != CoachFocusMode.all) {
       list = list.where((i) => matchesInsight(i, mode)).toList();
@@ -62,7 +64,9 @@ class VoiceCoachFocusFilter {
     List<VoiceFeedbackEvent> events, {
     required bool coachFocusEnabled,
     required CoachFocusMode mode,
+    bool silentCoach = false,
   }) {
+    if (silentCoach) return const [];
     if (!coachFocusEnabled || mode == CoachFocusMode.all) return events;
     return events.where((e) => matchesEvent(e, mode)).toList();
   }

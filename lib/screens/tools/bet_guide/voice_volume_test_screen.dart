@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +18,19 @@ class VoiceVolumeTestScreen extends StatefulWidget {
 
 class _VoiceVolumeTestScreenState extends State<VoiceVolumeTestScreen> {
   static final _dateFormat = DateFormat('dd/MM');
+  VoiceVolumeTestProvider? _volumeProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _volumeProvider ??= context.read<VoiceVolumeTestProvider>();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_volumeProvider?.cancelActiveSession());
+    super.dispose();
+  }
 
   @override
   void initState() {

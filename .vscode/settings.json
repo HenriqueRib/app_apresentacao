@@ -1,0 +1,166 @@
+{
+  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#0a1628",
+    "activityBar.foreground": "#e8f4ec",
+    "activityBar.inactiveForeground": "#94a3b8",
+    "activityBarBadge.background": "#4caf50",
+    "activityBarBadge.foreground": "#ffffff",
+    "activityBar.activeBorder": "#4caf50",
+
+    "titleBar.activeBackground": "#1e3a5f",
+    "titleBar.inactiveBackground": "#152a45",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveForeground": "#94a3b8",
+
+    "editor.background": "#0f3d3e",
+    "editor.foreground": "#e8f4ec",
+    "editorLineNumber.foreground": "#4caf50",
+    "editorLineNumber.activeForeground": "#ffffff",
+    "editorCursor.foreground": "#22c55e",
+    "editor.selectionBackground": "#1e3a5f88",
+    "editor.selectionHighlightBackground": "#1e3a5f44",
+    "editor.inactiveSelectionBackground": "#152a4588",
+    "editor.lineHighlightBackground": "#152a4566",
+    "editorGutter.background": "#0a1628",
+    "editorBracketMatch.background": "#4caf5033",
+    "editorBracketMatch.border": "#4caf5088",
+    "editorIndentGuide.background": "#152a4566",
+    "editorIndentGuide.activeBackground": "#4caf5088",
+    "editorWidget.background": "#0a0f1a",
+    "editorSuggestWidget.background": "#152a45",
+    "editorSuggestWidget.selectedBackground": "#1e3a5f",
+    "editorHoverWidget.background": "#152a45",
+
+    "statusBar.background": "#1e3a5f",
+    "statusBar.foreground": "#ffffff",
+    "statusBar.noFolderBackground": "#0a1628",
+    "statusBar.debuggingBackground": "#ff6b35",
+    "statusBar.debuggingForeground": "#000000",
+
+    "sideBar.background": "#0a0f1a",
+    "sideBar.foreground": "#e0ffe8",
+    "sideBarSectionHeader.background": "#152a45",
+    "sideBarSectionHeader.foreground": "#ffffff",
+
+    "tab.activeBackground": "#0f3d3e",
+    "tab.inactiveBackground": "#0a1628",
+    "tab.activeForeground": "#ffffff",
+    "tab.inactiveForeground": "#94a3b8",
+    "tab.border": "#1e3a5f66",
+    "tab.activeBorder": "#4caf50",
+
+    "panel.background": "#0a0f1a",
+    "panel.border": "#1e3a5f44",
+    "panelTitle.activeBorder": "#4caf50",
+
+    "terminal.background": "#0a0f1a",
+    "terminal.foreground": "#e8f4ec",
+    "terminal.ansiGreen": "#4caf50",
+    "terminal.ansiBlue": "#1e3a5f",
+    "terminal.ansiCyan": "#2dd4bf",
+    "terminal.ansiYellow": "#ffa000",
+    "terminal.ansiRed": "#e53935",
+    "terminal.ansiMagenta": "#ff6b35",
+
+    "minimap.background": "#0a1628",
+    "minimap.selectionHighlight": "#1e3a5f88",
+
+    "badge.background": "#4caf50",
+    "badge.foreground": "#ffffff",
+
+    "button.background": "#1e3a5f",
+    "button.foreground": "#ffffff",
+    "button.hoverBackground": "#2a4a7a",
+    "focusBorder": "#4caf50",
+    "input.background": "#152a45",
+    "input.foreground": "#e8f4ec",
+    "input.border": "#1e3a5f66",
+    "dropdown.background": "#152a45",
+    "list.activeSelectionBackground": "#1e3a5f88",
+    "list.hoverBackground": "#152a45",
+    "list.highlightForeground": "#4caf50",
+    "scrollbarSlider.background": "#152a4588",
+    "scrollbarSlider.hoverBackground": "#1e3a5f88",
+    "scrollbarSlider.activeBackground": "#4caf5088",
+
+    "gitDecoration.addedResourceForeground": "#4caf50",
+    "gitDecoration.modifiedResourceForeground": "#ffa000",
+    "gitDecoration.deletedResourceForeground": "#e53935",
+    "gitDecoration.conflictingResourceForeground": "#ff6b35",
+
+    "peekView.border": "#4caf50",
+    "peekViewEditor.background": "#0f3d3e",
+    "peekViewTitle.background": "#1e3a5f",
+
+    "debugToolBar.background": "#152a45",
+    "debugIcon.startForeground": "#4caf50",
+    "debugIcon.stopForeground": "#e53935",
+
+    "editorGroupHeader.tabsBackground": "#0a1628",
+    "editorGroup.border": "#1e3a5f33",
+    "breadcrumb.activeSelectionForeground": "#4caf50",
+    "sash.hoverBorder": "#4caf5088"
+  },
+
+  "editor.fontSize": 14,
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.stickyScroll.enabled": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.rulers": [80],
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off"
+  },
+
+  "dart.lineLength": 80,
+  "dart.previewFlutterUiGuides": true,
+  "dart.renameFilesOnType": "prompt",
+  "dart.openDevTools": "flutter",
+
+  "files.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/.pub-cache": true,
+    "**/ios/Pods": true,
+    "**/android/.gradle": true
+  },
+  "search.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/ios/Pods": true
+  },
+  "files.watcherExclude": {
+    "**/.dart_tool/**": true,
+    "**/build/**": true,
+    "**/ios/Pods/**": true
+  },
+
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "pubspec.yaml": "pubspec.lock,pubspec_overrides.yaml,.packages,.flutter-plugins,.flutter-plugins-dependencies",
+    "*.dart": "${capture}.g.dart"
+  },
+
+  "terminal.integrated.defaultProfile.osx": "zsh",
+
+  "git.autofetch": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.tree.indent": 16,
+
+  "cSpell.language": "pt-BR,en"
+}

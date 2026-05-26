@@ -1,212 +1,420 @@
-# 🎤 Palestrante de Sucesso
+# Palestrante de Sucesso
 
-> **"Transforme seu mindset, conquiste sua audiência."**  
-> Um ecossistema completo para capacitar oradores na "missão de gigante": converter oratória em conversão, comunicação em missão e apresentações em transformações reais de vida.
+> **Transforme seu mindset, conquiste sua audiência.**
 
----
+Aplicativo multiplataforma (**Flutter**) para capacitar oradores no **Método Shinyashiki** (*Os segredos das apresentações poderosas*): planejar, preparar, treinar, executar no palco e aprimorar com métricas reais — com módulos adicionais de ensino, IA e coach vocal (**Ensaio be-T**).
 
-## 🛠 1. Arquitetura e Metodologia
-
-O projeto **Palestrante de Sucesso** foi projetado seguindo as melhores práticas de engenharia de software para o ecossistema Flutter. Utilizamos uma arquitetura baseada em **Camadas (Layer-First)** altamente modular e desacoplada, focada em testabilidade, facilidade de manutenção e princípios **SOLID**.
-
-### Padrões Técnicos e de Design
-* **Gerenciamento de Estado**: [Provider](https://pub.dev/packages/provider) (Adoção de `ChangeNotifierProvider` e `MultiProvider` para garantir fluxos reativos e controle de estados eficientes e seguros).
-* **Camada de Serviço (Service Layer)**: Serviços singleton bem definidos que isolam a lógica de negócio (ex: persistência com `StorageService`, comunicação externa com `ApiService` e carregamento de dados estáticos com `CharacteristicsService`).
-* **State & Dependency Injection**: Centralizado no ponto de entrada do app (`main.dart`) por meio do `MultiProvider`, disponibilizando estados desacoplados para a árvore de widgets sem acoplamento direto.
-* **Modelo Orientado a Domínio**: Modelos de dados imutáveis decorados com `@immutable` e equipados com cópias defensivas (`copyWith`) e serializadores (`fromJson`/`toJson`).
+| | |
+|---|---|
+| **Pacote** | `palestrante_de_sucesso` |
+| **Versão** | `1.0.0+1` |
+| **SDK Dart** | `^3.11.3` |
+| **Plataformas** | Android · iOS · Web · macOS · Windows · Linux |
+| **Estado** | Desenvolvimento ativo |
 
 ---
 
-## 🧰 Ferramentas (Expansão 2026)
+## Índice
 
-Na aba **Início**, a seção **Ferramentas** agrega módulos aditivos sem alterar o ciclo de discursos:
+- [Visão geral](#visão-geral)
+- [Funcionalidades](#funcionalidades)
+- [Stack tecnológica](#stack-tecnológica)
+- [Arquitetura](#arquitetura)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação e execução](#instalação-e-execução)
+- [Configuração de ambiente](#configuração-de-ambiente)
+- [Testes e qualidade](#testes-e-qualidade)
+- [Build e publicação](#build-e-publicação)
+- [Documentação complementar](#documentação-complementar)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Roadmap](#roadmap)
+- [Contribuição](#contribuição)
+- [Licença](#licença)
+
+---
+
+## Visão geral
+
+O **Palestrante de Sucesso** (*Poder de Convencer* no `MaterialApp`) organiza a jornada do palestrante em **cinco passos** do ciclo de performance e um **hub de ferramentas** que estende o app sem quebrar o fluxo principal de discursos.
+
+```mermaid
+flowchart LR
+  A[Planejar] --> B[Preparar]
+  B --> C[Treinar]
+  C --> D[Executar]
+  D --> E[Aprimorar]
+  F[Ferramentas] -.-> A
+  F -.-> B
+  F -.-> C
+```
+
+| Camada | Responsabilidade |
+|--------|------------------|
+| **Screens / Widgets** | UI, navegação e composição visual |
+| **Providers** | Estado reativo (`ChangeNotifier` + Provider) |
+| **Services** | HTTP, persistência, áudio, STT, análise vocal, exportação |
+| **Models** | Entidades imutáveis, `fromJson` / `toJson` |
+| **Core** | Tema, constantes, rotas de API, utilitários |
+
+**Princípios de engenharia:** arquitetura em camadas (*layer-first*), null safety, separação UI/regra de negócio, persistência **offline-first** com sincronização opcional via API REST.
+
+> Screenshots: adicione capturas em `doc/assets/screenshots/` quando disponíveis e referencie aqui.
+
+---
+
+## Funcionalidades
+
+### Ciclo de performance (5 passos)
+
+| Passo | Módulo | Destaques |
+|-------|--------|-----------|
+| 1 | **Planejar** | Setup wizard, KPI de sucesso, workflows *Objetivo Próprio* / *Objetivo do Cliente*, Quick Pitch (5 min) |
+| 2 | **Preparar** | Arquitetura da mensagem, editor de esboço, marco *Pico de Eureca* |
+| 3 | **Treinar** | Simulador de plateia, ritual de concentração, checklist de posse de palco |
+| 4 | **Executar** | Modo Palco, teleprompter, contador de silêncio, urgência da largada |
+| 5 | **Aprimorar** | Métricas de sucesso, feedback loops, biblioteca de características oratórias |
+
+### Hub de ferramentas (Início)
 
 | Ferramenta | Descrição |
 |------------|-----------|
-| Central da Reunião | Abas: comentários (favoritos/notas) + respostas IA (adicionar, listar, melhorar) |
-| A Sentinela | Estudos: adicionar, listar, gerar/melhorar comentários, settings IA |
-| Discursos | CRUD: adicionar, editar, excluir, gerar/melhorar manuscrito e guia |
-| Partes 10 min | CRUD + gerar/melhorar esboço + apresentar com timer |
-| Timer Pro | Cronômetro fullscreen com split (1+7+2) e bordas verde/amarelo/vermelho |
-| Meu Estúdio | Tópicos curtos independentes + flashcards + refinar com IA |
-| Autoavaliação be-T | Checklist das 53 características com histórico |
-| Masterclass Shinyashiki | 5 passos pedagógicos + Treinador de Voz (gravação) |
+| **Central da Reunião** | Comentários (favoritos/notas) e respostas geradas com IA |
+| **A Sentinela** | Estudos: CRUD, comentários iniciais/finais, configurações de IA |
+| **Discursos** | CRUD, manuscrito, guia, melhorias com IA |
+| **Partes 10 min** | CRUD, esboço, apresentação com timer |
+| **Timer Pro** | Cronômetro fullscreen com split (1+7+2) e alertas visuais |
+| **Meu Estúdio** | Tópicos curtos, flashcards, refinamento com IA |
+| **Ensaio be-T** | Coach vocal em tempo real: STT, métricas, histórico, relatório, PDF — *Ensaie. Treine. Evolua.* |
+| **Autoavaliação be-T** | Checklist das 53 características com histórico |
+| **Masterclass Shinyashiki** | Passos pedagógicos do método |
 
-Ver [doc/mobile/](doc/mobile/) para contratos de API.
+Detalhamento do **Ensaio be-T**: [doc/mobile/ensaio-be-t-funcionalidades.md](doc/mobile/ensaio-be-t-funcionalidades.md).
 
 ---
 
-## 📁 2. Estrutura do Projeto
+## Stack tecnológica
 
-A organização de diretórios reflete a separação clara de responsabilidades:
+| Categoria | Tecnologia |
+|-----------|------------|
+| Framework | [Flutter](https://flutter.dev) 3.x (stable) |
+| Linguagem | [Dart](https://dart.dev) `^3.11.3` |
+| Estado | [provider](https://pub.dev/packages/provider) `^6.1.2` |
+| Persistência local | [shared_preferences](https://pub.dev/packages/shared_preferences) |
+| Rede | [http](https://pub.dev/packages/http) |
+| Áudio / voz | [record](https://pub.dev/packages/record), [audioplayers](https://pub.dev/packages/audioplayers), [speech_to_text](https://pub.dev/packages/speech_to_text) |
+| Utilitários | [uuid](https://pub.dev/packages/uuid), [intl](https://pub.dev/packages/intl), [path_provider](https://pub.dev/packages/path_provider), [wakelock_plus](https://pub.dev/packages/wakelock_plus) |
+| Exportação | [pdf](https://pub.dev/packages/pdf), [share_plus](https://pub.dev/packages/share_plus) |
+| Qualidade | [flutter_lints](https://pub.dev/packages/flutter_lints), `flutter test`, `flutter analyze` |
+| Backend | API REST Laravel (contrato em `doc/mobile/`) — **opcional** para vários fluxos |
+
+**Banco de dados:** não há SQLite no app; entidades são serializadas em JSON no `SharedPreferences` via `StorageService`.
+
+**Docker / CI:** não configurados neste repositório.
+
+---
+
+## Arquitetura
+
+### Fluxo de dados
 
 ```text
-lib/
-├── core/
-│   ├── constants/         # Valores globais de layout, chaves de API e strings estáticas (app_constants.dart)
-│   └── theme/             # Design System contendo lightTheme e darkTheme (app_theme.dart)
-├── models/                # Entidades de domínio imutáveis e enums estruturados (Speech, Presentation, etc.)
-├── providers/             # Gerenciadores de estado reativos / ViewModels (SpeechProvider, ResourceProvider, etc.)
-├── screens/               # Interfaces visuais organizadas por passos e contextos da jornada do usuário
-│   ├── characteristics/   # Biblioteca de competências oratórias para aprimoramento contínuo
-│   ├── dashboard/         # Visualizações de progresso, relatórios de ensaios e feedbacks sinceros
-│   ├── execution/         # Interfaces de performance ao vivo, como o Modo Palco (stage_mode)
-│   ├── onboarding/        # Fluxo interativo de boas-vindas do aplicativo
-│   ├── planning/          # Assistente (wizard) e criação de objetivos de discursos
-│   ├── preparation/       # Editor de esboços estruturados e arquitetura da mensagem
-│   ├── resources/         # Repositório criativo de piadas, vídeos, histórias e anedotas
-│   └── training/          # Temporizador de ensaio, controle de energia e simuladores
-│   └── tools/             # Ferramentas aditivas (reunião, timer pro, estúdio, masterclass)
-└── services/              # Abstrações de E/S, comunicação HTTP e persistência local persistente
+┌─────────────┐     listen      ┌──────────────┐     read/write    ┌─────────────────┐
+│   Screens   │ ◄────────────── │  Providers   │ ◄───────────────► │ StorageService  │
+│  / Widgets  │                 │ (ViewModel)  │                   │ (offline JSON)  │
+└─────────────┘                 └──────┬───────┘                   └─────────────────┘
+                                       │
+                                       ▼
+                                ┌──────────────┐
+                                │   Services   │──── HTTP ────► API REST (opcional)
+                                │ ApiService,  │
+                                │ Voice*, etc. │
+                                └──────────────┘
 ```
 
----
+### Injeção de dependências
 
-## 🔧 3. Tecnologias Utilizadas
+Providers são registrados no ponto de entrada (`lib/main.dart`) com `MultiProvider`, expondo estado para toda a árvore de widgets sem acoplamento direto nas telas.
 
-* **Flutter SDK**: Framework multiplataforma de alta performance para UI nativa.
-* **Dart**: Linguagem base tipada, performática e moderna.
-* **Provider (v6.1.2)**: Solução estável e oficial para gerenciamento de estado e injeção de dependência.
-* **Shared Preferences (v2.3.5)**: Motor de persistência de chave-valor local usado com mapeamento JSON robusto.
-* **Http (v1.6.0)**: Cliente HTTP para consumir serviços de IA e sincronização no backend.
-* **Uuid (v4.5.1)**: Geração de identificadores exclusivos para entidades locais.
-* **Cupertino Icons (v1.0.8)**: Assets visuais nativos.
+### Padrões adotados
 
----
-
-## 🎯 4. Status das Funcionalidades
-
-### **Passo 1: Planejar (Planning Wizard)** ✅
-- [x] **Setup Wizard**: Formulário sequencial obrigando a definição clara do KPI de sucesso e tipo de discursos (Estudante 10 min vs Público 30 min).
-- [x] **Tipos de Workflow**: Controle e validação de "Objetivo Próprio" (vendas, patrocínio) e "Objetivo do Cliente" (dores e soluções).
-- [x] **Quick Pitch**: Suporte para microapresentações dinâmicas de 5 minutos baseadas nos ensinamentos de Nuno Cobra.
-
-### **Passo 2: Preparar (Preparation)** ✅
-- [x] **Arquitetura de Mensagem**: Limitação de caracteres em inputs textuais para evitar "gordura textual" e focar na síntese objetiva.
-- [x] **Pico de Eureca (Milestone 5)**: Destaque visual na UI focado no elo de conexão entre o problema levantado e a solução oferecida.
-- [x] **Editor de Esboço Estruturado**: Edição organizada de introdução, pontos principais, passagens de apoio e conclusão tripartite.
-
-### **Passo 3: Treinar (Training Module)** ✅
-- [x] **Simulador de Plateia**: Controle de tempo em ensaios, gravação do progresso de duração e vibrações interativas.
-- [x] **Ritual de Concentração**: Guia mental de preparação pré-ensaio para dominar o medo e focar na missão.
-- [x] **Checklist de Posse de Palco**: Controle manual de postura, movimentação estratégica, comunicação afetiva e independência de slides.
-
-### **Passo 4: Executar (Stage Mode)** ✅
-- [x] **Modo Palco (Zero Distração)**: Interface limpa e em tela cheia otimizada para visualização rápida no palco.
-- [x] **Teleprompter Inteligente**: Leitura em tempo real do manuscrito gerado com destaque de ritmo.
-- [x] **Contador de Silêncio**: Timer regressivo visual para pausas dramáticas e consolidação de ideias.
-- [x] **Urgência da Largada**: Avisos e comandos críticos de tempo focando nos primeiros 3 minutos fundamentais.
-
-### **Passo 5: Aprimorar (Dashboard)** ✅
-- [x] **Success Metrics**: Dashboard de acompanhamento registrando dados concretos (negócios fechados, contratos) em detrimento de métricas de vaidade.
-- [x] **Feedback Loops**: Cadastro e análise sincera de críticas, lições aprendidas e pontos fortes a desenvolver.
-- [x] **Biblioteca de Características**: Biblioteca interativa para estudar técnicas de comunicação de impacto.
+- **Provider + `ChangeNotifier`** para estado reativo
+- **Service layer** singleton para I/O e regras transversais
+- **Modelos imutáveis** com `copyWith` e serialização JSON
+- **Rotas de API centralizadas** em `lib/core/constants/api_routes.dart`
+- **Offline-first** no Ensaio be-T; análise online sob opt-in do usuário
 
 ---
 
-## 🚀 5. Como Executar
+## Estrutura do projeto
 
-### Pré-requisitos
-* Flutter SDK instalado (versão estável mais recente recomendada).
-* Emulador ou dispositivo físico conectado (Android, iOS ou Desktop).
-* Servidor Backend executando em `http://localhost:8001` (caso queira habilitar a sincronização remota).
+```text
+app_apresentacao/
+├── lib/
+│   ├── core/              # constants, theme, utils
+│   ├── models/            # entidades de domínio
+│   ├── providers/         # gerenciamento de estado
+│   ├── screens/           # telas por fluxo (planning, training, tools/…)
+│   ├── services/          # API, storage, voz, exportação, IA heurística
+│   ├── utils/             # helpers de navegação e UI
+│   ├── widgets/           # componentes reutilizáveis (shell, ensaio, relatório)
+│   └── main.dart          # bootstrap + MultiProvider
+├── assets/
+│   ├── data/              # JSON estático (características, masterclass, …)
+│   └── images/
+├── test/                  # testes unitários e de widget
+├── doc/
+│   ├── mobile/            # contratos API, ensaio be-T, integração backend
+│   └── ensino/            # material metodológico
+├── android/ ios/ web/ macos/ windows/ linux/
+├── pubspec.yaml
+└── analysis_options.yaml
+```
 
-### Comandos de Terminal
+| Pasta `lib/screens/tools/` | Conteúdo |
+|----------------------------|----------|
+| `meeting/` | Central da Reunião |
+| `assentinel/` | A Sentinela |
+| `discursos/` | Admin de discursos |
+| `partes/` | Partes de 10 minutos |
+| `timer/` | Timer Pro |
+| `studio/` | Meu Estúdio |
+| `bet_guide/` | Ensaio be-T, autoavaliação, gravações, volume |
+| `shinyashiki_masterclass/` | Masterclass |
+
+---
+
+## Pré-requisitos
+
+| Requisito | Notas |
+|-----------|--------|
+| [Flutter SDK](https://docs.flutter.dev/get-started/install) | Canal **stable** (testado com 3.41.x) |
+| Xcode | Para build iOS (macOS) |
+| Android Studio / SDK | Para build Android |
+| Dispositivo ou emulador | Físico recomendado para microfone e STT no Ensaio be-T |
+| Backend (opcional) | Laravel com rotas `doc/mobile/` — só necessário para IA/sincronização remota |
+
+Verifique o ambiente:
 
 ```bash
-# 1. Sincronizar e baixar dependências
-flutter pub get
-
-# 2. Limpar cache de compilação antiga
-flutter clean
-
-# 3. Executar o app em Modo Debug (Dispositivo padrão)
-flutter run
-
-# 4. Executar no Navegador Web (Google Chrome)
-flutter run -d chrome
-
-# 5. Executar em Modo Profile (Recomendado para verificar fluidez da UI e frames)
-flutter run --profile
+flutter doctor -v
 ```
 
 ---
 
-## ⚡ 6. Dependências Principais
+## Instalação e execução
 
-* **`provider`**: Lida com a propagação de mudanças reativas da regra de negócio à interface, mantendo a responsabilidade de repintura otimizada.
-* **`shared_preferences`**: Central de armazenamento permanente e offline. As entidades complexas são codificadas em strings JSON e salvas de forma segura sob chaves dedicadas.
-* **`http`**: Faz solicitações assíncronas ao servidor web local, lidando com timeouts, erros de conexão e tratamento de respostas estruturadas do backend.
-* **`uuid`**: Garante que novos esboços e recursos criativos recebam chaves primárias únicas independentes do banco remoto.
+```bash
+# Clone o repositório (substitua pela URL do seu remoto)
+git clone <URL_DO_REPOSITORIO>
+cd app_apresentacao
 
----
+# Dependências
+flutter pub get
 
-## 💎 7. Qualidade de Código e Boas Práticas
+# Listar dispositivos disponíveis
+flutter devices
 
-* **Clean Code**: Nomes de variáveis autoexplicativos, métodos pequenos e focados em responsabilidade única (SRP).
-* **Imutabilidade e Segurança**: Entidades de domínio imutáveis que evitam efeitos colaterais na manipulação de estados.
-* **Null Safety Estrito**: Sem uso de asserções inseguras, tirando o máximo proveito das garantias do Dart moderno.
-* **Separação UI/Regra de Negócios**: Nenhuma lógica de dados é injetada diretamente nos widgets visuais, sendo toda delegada aos herdeiros de `ChangeNotifier` (`SpeechProvider`, etc.).
+# Executar (dispositivo padrão)
+flutter run
 
----
+# Plataformas específicas
+flutter run -d chrome      # Web
+flutter run -d ios         # Simulador iOS
+flutter run -d android     # Emulador Android
+```
 
-## 🌐 8. Internacionalização
+### Limpar cache de build
 
-O projeto possui todas as constantes de texto e strings organizadas em `AppConstants` e componentes de apresentação de forma centralizada e padronizada. A estrutura de código foi projetada para receber fácil integração futura de arquivos `.arb` via pacote oficial `flutter_localizations` (`intl`).
+```bash
+flutter clean
+flutter pub get
+```
 
----
+### Modo profile (performance)
 
-## 💾 9. Persistência de Dados
+Útil para medir jank e comportamento próximo ao release:
 
-A persistência do aplicativo é gerenciada pela classe `StorageService`. Usamos um padrão híbrido de serialização:
-1. As entidades do domínio (`Speech`, `Presentation`, `CreativeResource`) contêm métodos `toJson()` e `fromJson()`.
-2. O `StorageService` armazena e lê os objetos serializados em listas codificadas como Strings JSON usando `SharedPreferences`.
-3. Isso garante o funcionamento offline completo e respostas instantâneas de leitura/gravação sem adicionar dependências nativas pesadas de SQLite ou NoSQL nativos.
-
----
-
-## 🔌 10. APIs e Integrações
-
-O `ApiService` atua como o cliente para o backend corporativo remoto. As principais integrações configuradas são:
-* **Geração de Manuscritos**: Endpoint `/v1/discursos/gerar-manuscrito/total` recebe os dados brutos estruturados e gera textos formatados.
-* **Guia e Roteiro de IA**: Endpoint `/v1/discursos/gerar-guia` para processar orientações estruturadas de palco.
-* **Histórico Centralizado**: Consumo de listagem centralizada (`/v1/discursos`) e detalhes específicos (`/v1/discursos/{id}`) para sincronia multidevice.
-* **Insight da Semana**: Endpoint `/v1/comentarios/semanal` que baixa dados e análises reflexivas do servidor para alimentar a inspiração do palestrante.
-* **Refinar Tópico**: Endpoint `/v1/discursos/refinar-texto` para melhorar frases curtas no Estúdio de Esboços.
-
----
-
-## 🚧 11. Status do Projeto
-
-Atualmente, o projeto encontra-se em **desenvolvimento ativo**, com todos os módulos essenciais da metodologia Shinyashiki totalmente implementados localmente e integrados ao backend REST.
-
----
-
-## 📚 12. Próximas Melhorias Planejadas
-
-1. **Sincronização Offline First**: Fila de persistência (Outbox) para sincronizar esboços e notas quando a internet voltar.
-2. **LEIA via API**: Integrar `POST /discursos/sugerir-versiculos` no Estúdio de Esboços.
-3. **Chat IA**: Tela dedicada no hub de Ferramentas.
-
----
-*Palestrante de Sucesso - Transformando tempo em evolução.*  
-**Henriqueessafoiboa2025**
-
-# Executar no navegador
-flutter run -d chrome
-
-# --profile faz com que o app fique disponível por 7 dias no iphone 
-//Elizangela
-flutter run --profile -d "00008140-001035D2149B801C"
-//Henrique
-flutter run --profile -d "00008110-000229413C03A01E"
-
-flutter run                    # dispositivo padrão conectado
-flutter run -d chrome          # Web (Google Chrome)
-flutter run -d ios             # iOS Simulator (se disponível)
-flutter run -d android         # Android Emulator (se disponível)
-flutter run -d 824DFB4D-8FCD-4BDF-9807-64671D59DC71
-flutter emulators --launch apple_ios_simulato
-
-# Executar com perfil de performance (recomendado para testes de UI fluida)
+```bash
 flutter run --profile
+```
+
+No **iOS físico**, o build profile costuma ter validade limitada para instalação ad hoc — use o UDID do seu aparelho apenas localmente (`flutter devices`), **sem commitar** identificadores no repositório:
+
+```bash
+flutter run --profile -d <DEVICE_ID>
+```
+
+### Ícone do app
+
+```bash
+dart run flutter_launcher_icons
+```
+
+---
+
+## Configuração de ambiente
+
+### URL da API
+
+A base da API é definida em código (não há arquivo `.env` no app):
+
+```dart
+// lib/core/constants/app_constants.dart
+static const String apiBaseUrl = 'https://codeline43.com.br/api';
+```
+
+Para desenvolvimento local, altere temporariamente para o seu backend (exemplo):
+
+```dart
+// static const String apiBaseUrl = 'http://localhost:8001/api';
+```
+
+| Item | Valor / convenção |
+|------|-------------------|
+| Prefixo v1 | `{apiBaseUrl}/v1/...` |
+| Rotas canônicas | `lib/core/constants/api_routes.dart` |
+| Timeout IA (doc) | 60 s |
+| Envelope preferido | `{ "data": ... }` (Flutter normaliza legado) |
+
+**Segurança:** não commite tokens, chaves de API, senhas ou UDIDs de dispositivos. Use variáveis locais ou configuração de build não versionada se no futuro migrar para flavors.
+
+### Permissões (Ensaio be-T)
+
+- **Microfone** — gravação e análise de volume
+- **Reconhecimento de fala** — transcrição em português (quando disponível no SO)
+
+Confirme `Info.plist` (iOS) e `AndroidManifest.xml` após alterações de plugins de áudio/voz.
+
+### IDE recomendada
+
+O projeto inclui [`.vscode/settings.json`](.vscode/settings.json) com tema alinhado ao design system e atalhos Dart/Flutter (`formatOnSave`, exclusões de `build/`, etc.).
+
+---
+
+## Testes e qualidade
+
+```bash
+# Todos os testes
+flutter test
+
+# Análise estática
+flutter analyze
+
+# Teste de um arquivo
+flutter test test/voice_analysis_engine_test.dart
+```
+
+Há **20+ arquivos** de teste cobrindo providers, motor de análise vocal, exportação de relatório, teleprompter, calibração de volume e payloads de análise online.
+
+**Boas práticas no código:**
+
+- Null safety estrito
+- Lints via `flutter_lints` (`analysis_options.yaml`)
+- Lógica de negócio nos providers/services, não nos widgets
+
+---
+
+## Build e publicação
+
+```bash
+# Android APK
+flutter build apk --release
+
+# Android App Bundle (Play Store)
+flutter build appbundle --release
+
+# iOS (requer assinatura Apple)
+flutter build ios --release
+
+# Web
+flutter build web --release
+```
+
+Consulte a [documentação oficial de deploy](https://docs.flutter.dev/deployment) para assinatura, provisioning e lojas.
+
+---
+
+## Documentação complementar
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [doc/mobile/README.md](doc/mobile/README.md) | Índice mobile + convenções de API |
+| [doc/mobile/contrato-json-backend-flutter.md](doc/mobile/contrato-json-backend-flutter.md) | Contrato JSON request/response |
+| [doc/mobile/ensaio-be-t-funcionalidades.md](doc/mobile/ensaio-be-t-funcionalidades.md) | Ensaio be-T (completo) |
+| [doc/mobile/contrato-ensaio-analise-online.md](doc/mobile/contrato-ensaio-analise-online.md) | Análise online opcional |
+| [doc/mobile/ROTAS-PRODUCAO.md](doc/mobile/ROTAS-PRODUCAO.md) | Rotas publicadas em produção |
+| [Escopo.md](Escopo.md) | PRD / escopo de produto |
+
+---
+
+## Troubleshooting
+
+| Problema | Possível solução |
+|----------|------------------|
+| `flutter pub get` falha | `flutter upgrade`; confira versão do Dart `^3.11.3` |
+| STT não transcreve | Permissões de microfone; teste em dispositivo físico; idioma `pt_BR` |
+| API retorna 404 | Compare com [ROTAS-PRODUCAO.md](doc/mobile/ROTAS-PRODUCAO.md); evite rotas legadas `/api/wol/` |
+| iOS: build falha após plugin | `cd ios && pod install && cd ..` |
+| Análise online não dispara | Feature opt-in; ver contrato em `contrato-ensaio-analise-online.md` |
+| Hot reload estranho em provider | Reinicie com `R` ou `flutter run` limpo após mudança em `main.dart` |
+
+---
+
+## FAQ
+
+**O app funciona sem internet?**  
+Sim, para o ciclo local, persistência e a maior parte do **Ensaio be-T**. Recursos de IA e sincronização dependem da API.
+
+**Onde altero a URL do backend?**  
+`lib/core/constants/app_constants.dart` → `apiBaseUrl`.
+
+**Qual a diferença entre Ensaio be-T e Autoavaliação be-T?**  
+Ensaio: métricas **vocais** ao vivo (WPM, muletas, volume). Autoavaliação: checklist das **53 características** (inclui aspectos não detectáveis só por áudio).
+
+**Há banco SQLite?**  
+Não. Dados locais em `SharedPreferences` como JSON.
+
+---
+
+## Roadmap
+
+Itens alinhados ao código e à documentação mobile (não exaustivo):
+
+1. **Sincronização offline-first** — fila/outbox para esboços e notas quando a rede voltar
+2. **LEIA via API** — `POST /v1/discursos/sugerir-versiculos` no Estúdio
+3. **Chat IA** — tela dedicada no hub de Ferramentas
+4. Cobertura de testes e polish do modo visual do Ensaio be-T
+
+---
+
+## Contribuição
+
+1. Crie uma branch a partir da principal: `feat/descricao-curta` ou `fix/descricao-curta`
+2. Mantenha escopo focado; siga a estrutura em camadas existente
+3. Rode `flutter analyze` e `flutter test` antes do PR
+4. Atualize `doc/mobile/` quando alterar contratos de API ou fluxos be-T
+
+### Convenção de commits (sugestão)
+
+```text
+feat: nova funcionalidade
+fix: correção de bug
+docs: documentação
+test: testes
+refactor: refatoração sem mudança de comportamento
+chore: build, deps, tooling
+```
+
+---
+
+## Licença
+
+Este repositório **não inclui arquivo LICENSE** na raiz. O uso, distribuição e contribuição externa dependem da política do mantenedor do projeto. Entre em contato com os responsáveis antes de publicar forks ou derivados.
+
+---
+
+<p align="center">
+  <strong>Palestrante de Sucesso</strong> — transformando tempo em evolução.
+</p>

@@ -8,10 +8,12 @@ enum EvolutionMetric { score, fillers, wpm }
 /// Gráfico leve de evolução dos últimos ensaios.
 class VoiceRehearsalEvolutionChart extends StatefulWidget {
   final List<VoiceRehearsalAttempt> attempts;
+  final String? seriesLabel;
 
   const VoiceRehearsalEvolutionChart({
     super.key,
     required this.attempts,
+    this.seriesLabel,
   });
 
   @override
@@ -47,11 +49,24 @@ class _VoiceRehearsalEvolutionChartState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Evolução',
+              widget.seriesLabel != null
+                  ? 'Evolução — ${widget.seriesLabel}'
+                  : 'Evolução',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
+            if (widget.seriesLabel != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  '${widget.attempts.length} ensaio(s) nesta série',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textSecondary,
+                        fontSize: 11,
+                      ),
+                ),
+              ),
             const SizedBox(height: 10),
             SegmentedButton<EvolutionMetric>(
               segments: const [

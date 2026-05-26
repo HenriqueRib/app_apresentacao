@@ -15,12 +15,24 @@ class VoiceRehearsalReportExporter {
     if (attempt.seriesName != null && attempt.seriesName!.trim().isNotEmpty) {
       buffer.writeln('Série: ${attempt.seriesName}');
     }
+    if (attempt.speakerName != null && attempt.speakerName!.trim().isNotEmpty) {
+      buffer.writeln('Quem falou: ${attempt.speakerName}');
+    }
+    if (attempt.userNote != null && attempt.userNote!.trim().isNotEmpty) {
+      buffer.writeln('Minha nota: ${attempt.userNote}');
+    }
     buffer.writeln();
     buffer.writeln('Nota: ${attempt.finalScore.toStringAsFixed(1)}/10');
     buffer.writeln('WPM: ${m.wpm > 0 ? m.wpm.toStringAsFixed(0) : "—"}');
     buffer.writeln('Palavras: ${m.wordCount}');
     buffer.writeln('Muletas: ${m.fillerCount}');
     buffer.writeln('Pausas longas: ${m.longPauseCount}');
+    if (attempt.summary.outlineCoveragePercent != null) {
+      buffer.writeln(
+        'Cobertura do esboço: '
+        '${attempt.summary.outlineCoveragePercent!.round()}%',
+      );
+    }
     buffer.writeln();
 
     final insights = List.of(attempt.summary.insights)

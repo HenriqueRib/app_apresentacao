@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,12 +22,20 @@ import '../../../widgets/voice_rehearsal_prepare_card.dart';
 import 'voice_recordings_screen.dart';
 import 'voice_rehearsal_help_screen.dart';
 import 'voice_rehearsal_history_screen.dart';
-import 'voice_volume_test_screen.dart';
+import '../../../utils/voice_rehearsal_navigation.dart';
+import '../../../widgets/voice_rehearsal/voice_rehearsal_onboarding.dart';
 
 class VoiceRehearsalScreen extends StatefulWidget {
   final Speech? initialSpeech;
 
-  const VoiceRehearsalScreen({super.key, this.initialSpeech});
+  /// Atalho: ex. 240 para ensaio de 4 minutos.
+  final int? initialDurationGoalSeconds;
+
+  const VoiceRehearsalScreen({
+    super.key,
+    this.initialSpeech,
+    this.initialDurationGoalSeconds,
+  });
 
   @override
   State<VoiceRehearsalScreen> createState() => _VoiceRehearsalScreenState();
@@ -36,6 +46,7 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
   final ScrollController _feedScrollController = ScrollController();
   final TextEditingController _topicController = TextEditingController();
   final TextEditingController _seriesController = TextEditingController();
+  final TextEditingController _speakerController = TextEditingController();
   final GlobalKey _firstInsightKey = GlobalKey();
 
   CoachingCategoryFilter _selectedFilter = CoachingCategoryFilter.all;
@@ -60,6 +71,15 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
 
       await _provider!.initialize();
       await _provider!.loadSessionPrefs();
+      if (widget.initialDurationGoalSeconds != null) {
+        await _provider!
+            .setDurationGoalSeconds(widget.initialDurationGoalSeconds);
+      }
+      if (!mounted) return;
+      final speechProvider = context.read<SpeechProvider>();
+      if (speechProvider.speeches.isEmpty) {
+        await speechProvider.loadSpeeches();
+      }
       if (widget.initialSpeech != null) {
         await _provider!.linkSpeech(widget.initialSpeech);
         if (mounted) {
@@ -73,6 +93,8 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
       final checkpoint = await _provider!.loadCheckpoint();
       if (checkpoint != null && mounted) {
         _showResumeDialog(checkpoint);
+      } else if (mounted) {
+        await showVoiceRehearsalOnboardingIfNeeded(context);
       }
     });
   }
@@ -84,6 +106,7 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
     _feedScrollController.dispose();
     _topicController.dispose();
     _seriesController.dispose();
+    _speakerController.dispose();
     super.dispose();
   }
 
@@ -179,6 +202,9 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
     if (mounted) setState(() => _viewMode = mode);
   }
 
+  Future<void> _openVolumeTest(BuildContext context) =>
+      openVoiceVolumeTest(context);
+
   void _onAppBarMenu(BuildContext context, String value) {
     switch (value) {
       case 'view_minimal':
@@ -190,9 +216,7 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
           MaterialPageRoute(builder: (_) => const VoiceRehearsalHelpScreen()),
         );
       case 'volume':
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const VoiceVolumeTestScreen()),
-        );
+        _openVolumeTest(context);
       case 'history':
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -461,11 +485,19 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
           child: inSetup
               ? SingleChildScrollView(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: VoiceRehearsalPrepareCard(
-                    topicController: _topicController,
-                    seriesController: _seriesController,
-                    bestScore: _baselineBestScore,
-                    onTopicChanged: provider.setSessionTopic,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!provider.speechAvailable)
+                        const _SpeechUnavailableCard(),
+                      VoiceRehearsalPrepareCard(
+                        topicController: _topicController,
+                        seriesController: _seriesController,
+                        speakerController: _speakerController,
+                        bestScore: _baselineBestScore,
+                        onTopicChanged: provider.setSessionTopic,
+                      ),
+                    ],
                   ),
                 )
               : AnimatedSwitcher(
@@ -499,6 +531,7 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
           onNewRehearsal: () {
             provider.discardSession();
             _topicController.clear();
+            _speakerController.clear();
             _handledSummary = null;
             _previousInsightCount = 0;
             setState(() => _selectedFilter = CoachingCategoryFilter.all);
@@ -521,19 +554,104 @@ class _VoiceRehearsalScreenState extends State<VoiceRehearsalScreen>
       !provider.isRecording && provider.summary == null;
 
   Widget _buildPermissionWarning() {
-    return const Padding(
-      padding: EdgeInsets.all(24),
+    return Padding(
+      padding: const EdgeInsets.all(24),
       child: Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'Permissão de microfone necessária. Ative nas configurações do dispositivo.',
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(Icons.mic_off, size: 40, color: AppTheme.warningColor),
+              const SizedBox(height: 12),
+              const Text(
+                'Microfone necessário para ensaiar',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                Platform.isIOS
+                    ? 'Ajustes → Privacidade e Segurança → Microfone → ative este app. '
+                        'Em seguida toque em Tentar novamente.'
+                    : 'Configurações → Apps → Palestrante de Sucesso → Permissões → '
+                        'Microfone. Depois toque em Tentar novamente.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.textSecondary,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () async {
+                  await context.read<VoiceRehearsalProvider>().initialize();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar novamente'),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
+}
+
+class _SpeechUnavailableCard extends StatelessWidget {
+  const _SpeechUnavailableCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Card(
+        color: AppTheme.warningColor.withValues(alpha: 0.08),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.record_voice_over_outlined,
+                  color: AppTheme.warningColor, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Reconhecimento de voz indisponível',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      Platform.isIOS
+                          ? 'Use Gravar (.m4a) ou verifique Ajustes → Privacidade → '
+                              'Reconhecimento de fala. Volume, pausas e ritmo '
+                              'continuam no modo Gravar.'
+                          : 'Use Gravar (.m4a) ou verifique se o Google Speech '
+                              'está disponível no dispositivo.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.textSecondary,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _VoiceRehearsalBottomBar extends StatelessWidget {
@@ -669,7 +787,10 @@ class _VoiceRehearsalBottomBar extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton(
+                          child: Semantics(
+                            button: true,
+                            label: 'Iniciar treino com reconhecimento de voz',
+                            child: OutlinedButton(
                             onPressed: onStartTraining,
                             child: const Column(
                               mainAxisSize: MainAxisSize.min,
@@ -688,10 +809,14 @@ class _VoiceRehearsalBottomBar extends StatelessWidget {
                               ],
                             ),
                           ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: ElevatedButton(
+                          child: Semantics(
+                            button: true,
+                            label: 'Gravar ensaio em arquivo de áudio',
+                            child: ElevatedButton(
                             onPressed: onStartRecording,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.accentColor,
@@ -712,6 +837,7 @@ class _VoiceRehearsalBottomBar extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ),
                           ),
                         ),
                       ],
