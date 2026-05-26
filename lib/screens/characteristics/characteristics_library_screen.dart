@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/oratory_characteristic.dart';
 import '../../providers/oratory_guide_provider.dart';
 import '../../services/characteristics_service.dart';
+import '../../widgets/shell/shell_tab_scaffold.dart';
 import '../tools/bet_guide/characteristic_detail_screen.dart';
 import '../tools/bet_guide/self_assessment_screen.dart';
 
@@ -33,43 +34,46 @@ class _CharacteristicsLibraryScreenState
   Widget build(BuildContext context) {
     final service = CharacteristicsService.instance;
     final categories = service.allCategories;
-    
+
     List<OratoryCharacteristic> characteristics;
     if (_searchQuery.isNotEmpty) {
       characteristics = service.searchCharacteristics(_searchQuery);
     } else if (_selectedCategoryId != null) {
-      characteristics = service.getCharacteristicsByCategory(_selectedCategoryId!);
+      characteristics =
+          service.getCharacteristicsByCategory(_selectedCategoryId!);
     } else {
       characteristics = service.allCharacteristics;
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('53 Características'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.fact_check),
-            tooltip: 'Autoavaliação',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SelfAssessmentScreen()),
-            ),
+    return ShellTabScaffold(
+      title: '53 Características',
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.fact_check),
+          tooltip: 'Autoavaliação',
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SelfAssessmentScreen()),
           ),
-        ],
-      ),
+        ),
+      ],
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Consumer<OratoryGuideProvider>(
               builder: (context, guide, _) {
-                if (guide.weeklyFocusIds.isEmpty) return const SizedBox.shrink();
+                if (guide.weeklyFocusIds.isEmpty) {
+                  return const SizedBox.shrink();
+                }
                 return Card(
-                  color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                  color: AppTheme.shellAccentTeal.withValues(alpha: 0.1),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Text(
                       'Foco da semana: ${guide.weeklyFocusIds.length} característica(s)',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.shellAccentTeal,
+                          ),
                     ),
                   ),
                 );
@@ -88,18 +92,12 @@ class _CharacteristicsLibraryScreenState
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          setState(() {
-                            _searchQuery = '';
-                          });
+                          setState(() => _searchQuery = '');
                         },
                       )
                     : null,
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
           SizedBox(
@@ -111,21 +109,13 @@ class _CharacteristicsLibraryScreenState
                 _CategoryChip(
                   label: 'Todas',
                   isSelected: _selectedCategoryId == null,
-                  onTap: () {
-                    setState(() {
-                      _selectedCategoryId = null;
-                    });
-                  },
+                  onTap: () => setState(() => _selectedCategoryId = null),
                 ),
                 ...categories.map((cat) {
                   return _CategoryChip(
                     label: cat.name,
                     isSelected: _selectedCategoryId == cat.id,
-                    onTap: () {
-                      setState(() {
-                        _selectedCategoryId = cat.id;
-                      });
-                    },
+                    onTap: () => setState(() => _selectedCategoryId = cat.id),
                   );
                 }),
               ],
@@ -144,7 +134,7 @@ class _CharacteristicsLibraryScreenState
                 Text(
                   'Livro be-T',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.shellAccentTeal,
                       ),
                 ),
               ],
@@ -156,8 +146,9 @@ class _CharacteristicsLibraryScreenState
               padding: const EdgeInsets.all(16),
               itemCount: characteristics.length,
               itemBuilder: (context, index) {
-                final char = characteristics[index];
-                return _CharacteristicCard(characteristic: char);
+                return _CharacteristicCard(
+                  characteristic: characteristics[index],
+                );
               },
             ),
           ),
@@ -192,15 +183,22 @@ class _CategoryChip extends StatelessWidget {
         label: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.textPrimary,
+            color: isSelected
+                ? AppTheme.shellNavBackground
+                : AppTheme.shellTextPrimary,
             fontSize: 12,
           ),
         ),
         selected: isSelected,
         onSelected: (_) => onTap(),
-        backgroundColor: Colors.grey.shade100,
-        selectedColor: AppTheme.primaryColor,
-        checkmarkColor: Colors.white,
+        backgroundColor: AppTheme.shellSurfaceDark,
+        selectedColor: AppTheme.shellAccentTeal,
+        checkmarkColor: AppTheme.shellNavBackground,
+        side: BorderSide(
+          color: isSelected
+              ? AppTheme.shellAccentTeal
+              : AppTheme.shellTextSecondary.withValues(alpha: 0.3),
+        ),
       ),
     );
   }
@@ -217,8 +215,8 @@ class _CharacteristicCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryColor,
-          foregroundColor: Colors.white,
+          backgroundColor: AppTheme.shellAccentTeal.withValues(alpha: 0.2),
+          foregroundColor: AppTheme.shellAccentTeal,
           child: Text('${characteristic.id}'),
         ),
         title: Text(
@@ -227,8 +225,10 @@ class _CharacteristicCard extends StatelessWidget {
         ),
         subtitle: Text(
           '${characteristic.category} · Pág. ${characteristic.pageReference}',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: const Icon(Icons.chevron_right,
+            color: AppTheme.shellTextSecondary),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) =>
@@ -239,4 +239,3 @@ class _CharacteristicCard extends StatelessWidget {
     );
   }
 }
-

@@ -10,6 +10,14 @@ import '../models/self_assessment_record.dart';
 import '../models/assentinel_study.dart';
 import '../models/parte.dart';
 import '../models/resposta_gerada.dart';
+import '../models/voice_recording.dart';
+import '../models/voice_rehearsal_attempt.dart';
+import '../models/voice_rehearsal_report_view_mode.dart';
+import '../models/voice_rehearsal_session_prefs.dart';
+import '../models/voice_rehearsal_smart_flags.dart';
+import '../models/voice_rehearsal_next_focus.dart';
+import '../models/voice_rehearsal_weekly_goal.dart';
+import '../models/voice_volume_calibration.dart';
 
 class StorageService {
   static const String _presentationsKey = 'presentations';
@@ -28,6 +36,24 @@ class StorageService {
   static const String _assentinelSettingsKey = 'assentinel_settings';
   static const String _discursoSettingsKey = 'discurso_settings';
   static const String _parteSettingsKey = 'parte_settings';
+  static const String _voiceRecordingsKey = 'voice_recordings';
+  static const String _voiceRehearsalHistoryKey = 'voice_rehearsal_history';
+  static const String _voiceVolumeCalibrationKey = 'voice_volume_calibration';
+  static const String _voiceCustomFillerWordsKey = 'voice_custom_filler_words';
+  static const String _voiceRehearsalOnlineHelpKey =
+      'voice_rehearsal_online_help_enabled';
+  static const String _voiceRehearsalReportViewModeKey =
+      'voice_rehearsal_report_view_mode';
+  static const String _voiceRehearsalSessionPrefsKey =
+      'voice_rehearsal_session_prefs';
+  static const String _voiceRehearsalSmartFlagsKey =
+      'voice_rehearsal_smart_flags';
+  static const String _voiceRehearsalNextFocusKey = 'voice_rehearsal_next_focus';
+  static const String _voiceRehearsalWeeklyGoalKey =
+      'voice_rehearsal_weekly_goal';
+  static const String _voiceRehearsalLinkedSpeechIdKey =
+      'voice_rehearsal_linked_speech_id';
+  static const int _maxVoiceRehearsalHistory = 100;
 
   static StorageService? _instance;
   late SharedPreferences _prefs;
@@ -346,4 +372,282 @@ class StorageService {
 
   Future<void> savePartePromptGeral(String prompt) =>
       saveToolSettings(_parteSettingsKey, {'prompt_geral': prompt});
+
+  // --- Gravações Ensaio be-T ---
+  Future<List<VoiceRecording>> getVoiceRecordings() async {
+    final data = _prefs.getString(_voiceRecordingsKey);
+    if (data == null) return [];
+    try {
+      final list = jsonDecode(data) as List<dynamic>;
+      return list
+          .map((e) => VoiceRecording.fromJson(e as Map<String, dynamic>))
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveVoiceRecordings(List<VoiceRecording> recordings) async {
+    await _prefs.setString(
+      _voiceRecordingsKey,
+      jsonEncode(recordings.map((r) => r.toJson()).toList()),
+    );
+  }
+
+  Future<void> addVoiceRecording(VoiceRecording recording) async {
+    final list = await getVoiceRecordings();
+    list.insert(0, recording);
+    await saveVoiceRecordings(list);
+  }
+
+  Future<void> deleteVoiceRecording(String id) async {
+    final list = await getVoiceRecordings();
+    list.removeWhere((r) => r.id == id);
+    await saveVoiceRecordings(list);
+  }
+
+  Future<void> updateVoiceRecording(VoiceRecording recording) async {
+    final list = await getVoiceRecordings();
+    final index = list.indexWhere((r) => r.id == recording.id);
+    if (index != -1) {
+      list[index] = recording;
+      await saveVoiceRecordings(list);
+    }
+  }
+
+  // --- Histórico de tentativas Ensaio be-T ---
+  Future<List<VoiceRehearsalAttempt>> getVoiceRehearsalAttempts() async {
+    final data = _prefs.getString(_voiceRehearsalHistoryKey);
+    if (data == null) return [];
+    try {
+      final list = jsonDecode(data) as List<dynamic>;
+      return list
+          .map((e) => VoiceRehearsalAttempt.fromJson(e as Map<String, dynamic>))
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveVoiceRehearsalAttempts(List<VoiceRehearsalAttempt> attempts) async {
+    await _prefs.setString(
+      _voiceRehearsalHistoryKey,
+      jsonEncode(attempts.map((a) => a.toJson()).toList()),
+    );
+  }
+
+  Future<void> addVoiceRehearsalAttempt(VoiceRehearsalAttempt attempt) async {
+    final list = await getVoiceRehearsalAttempts();
+    list.insert(0, attempt);
+    while (list.length > _maxVoiceRehearsalHistory) {
+      list.removeLast();
+    }
+    await saveVoiceRehearsalAttempts(list);
+  }
+
+  Future<void> updateVoiceRehearsalAttempt(VoiceRehearsalAttempt attempt) async {
+    final list = await getVoiceRehearsalAttempts();
+    final index = list.indexWhere((a) => a.id == attempt.id);
+    if (index == -1) return;
+    list[index] = attempt;
+    await saveVoiceRehearsalAttempts(list);
+  }
+
+  Future<VoiceRehearsalAttempt?> getVoiceRehearsalAttemptById(String id) async {
+    final list = await getVoiceRehearsalAttempts();
+    try {
+      return list.firstWhere((a) => a.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> deleteVoiceRehearsalAttempt(String id) async {
+    final list = await getVoiceRehearsalAttempts();
+    list.removeWhere((a) => a.id == id);
+    await saveVoiceRehearsalAttempts(list);
+  }
+
+  // --- Calibração de volume Ensaio be-T ---
+  Future<VoiceVolumeCalibration?> getVolumeCalibration() async {
+    final data = _prefs.getString(_voiceVolumeCalibrationKey);
+    if (data == null) return null;
+    try {
+      return VoiceVolumeCalibration.fromJson(
+        jsonDecode(data) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> saveVolumeCalibration(VoiceVolumeCalibration calibration) async {
+    await _prefs.setString(
+      _voiceVolumeCalibrationKey,
+      jsonEncode(calibration.toJson()),
+    );
+  }
+
+  Future<void> clearVolumeCalibration() async {
+    await _prefs.remove(_voiceVolumeCalibrationKey);
+  }
+
+  // --- Muletas personalizadas Ensaio be-T ---
+  Future<List<String>> getCustomFillerWords() async {
+    final data = _prefs.getString(_voiceCustomFillerWordsKey);
+    if (data == null) return [];
+    try {
+      final list = jsonDecode(data) as List<dynamic>;
+      return list.map((e) => e.toString()).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveCustomFillerWords(List<String> words) async {
+    await _prefs.setString(_voiceCustomFillerWordsKey, jsonEncode(words));
+  }
+
+  // --- Ajuda online Ensaio be-T ---
+  Future<bool> getVoiceRehearsalOnlineHelpEnabled() async {
+    return _prefs.getBool(_voiceRehearsalOnlineHelpKey) ?? false;
+  }
+
+  Future<void> setVoiceRehearsalOnlineHelpEnabled(bool value) async {
+    await _prefs.setBool(_voiceRehearsalOnlineHelpKey, value);
+  }
+
+  // --- Modo de visualização do relatório de ensaio ---
+  Future<VoiceRehearsalReportViewMode> getVoiceRehearsalReportViewMode() async {
+    final raw = _prefs.getString(_voiceRehearsalReportViewModeKey);
+    return VoiceRehearsalReportViewMode.fromStorage(raw);
+  }
+
+  Future<void> setVoiceRehearsalReportViewMode(
+    VoiceRehearsalReportViewMode mode,
+  ) async {
+    await _prefs.setString(_voiceRehearsalReportViewModeKey, mode.storageKey);
+  }
+
+  // --- Metas da sessão ao vivo (Ensaio be-T) ---
+  Future<VoiceRehearsalSessionPrefs> getVoiceRehearsalSessionPrefs() async {
+    final raw = _prefs.getString(_voiceRehearsalSessionPrefsKey);
+    if (raw == null) return VoiceRehearsalSessionPrefs.defaults;
+    try {
+      return VoiceRehearsalSessionPrefs.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return VoiceRehearsalSessionPrefs.defaults;
+    }
+  }
+
+  Future<void> setVoiceRehearsalSessionPrefs(
+    VoiceRehearsalSessionPrefs prefs,
+  ) async {
+    await _prefs.setString(
+      _voiceRehearsalSessionPrefsKey,
+      jsonEncode(prefs.toJson()),
+    );
+  }
+
+  // --- Modo inteligente Ensaio be-T ---
+  Future<VoiceRehearsalSmartFlags> getVoiceRehearsalSmartFlags() async {
+    final raw = _prefs.getString(_voiceRehearsalSmartFlagsKey);
+    if (raw == null) return VoiceRehearsalSmartFlags.defaults;
+    try {
+      return VoiceRehearsalSmartFlags.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return VoiceRehearsalSmartFlags.defaults;
+    }
+  }
+
+  Future<void> setVoiceRehearsalSmartFlags(
+    VoiceRehearsalSmartFlags flags,
+  ) async {
+    await _prefs.setString(
+      _voiceRehearsalSmartFlagsKey,
+      jsonEncode(flags.toJson()),
+    );
+  }
+
+  Future<VoiceRehearsalNextFocus?> getVoiceRehearsalNextFocus() async {
+    final raw = _prefs.getString(_voiceRehearsalNextFocusKey);
+    if (raw == null) return null;
+    try {
+      return VoiceRehearsalNextFocus.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> setVoiceRehearsalNextFocus(VoiceRehearsalNextFocus? focus) async {
+    if (focus == null) {
+      await _prefs.remove(_voiceRehearsalNextFocusKey);
+      return;
+    }
+    await _prefs.setString(
+      _voiceRehearsalNextFocusKey,
+      jsonEncode(focus.toJson()),
+    );
+  }
+
+  Future<VoiceRehearsalWeeklyGoal> getVoiceRehearsalWeeklyGoal() async {
+    final raw = _prefs.getString(_voiceRehearsalWeeklyGoalKey);
+    if (raw == null) return VoiceRehearsalWeeklyGoal.defaults;
+    try {
+      return VoiceRehearsalWeeklyGoal.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return VoiceRehearsalWeeklyGoal.defaults;
+    }
+  }
+
+  Future<void> setVoiceRehearsalWeeklyGoal(
+    VoiceRehearsalWeeklyGoal goal,
+  ) async {
+    await _prefs.setString(
+      _voiceRehearsalWeeklyGoalKey,
+      jsonEncode(goal.toJson()),
+    );
+  }
+
+  Future<String?> getVoiceRehearsalLinkedSpeechId() async {
+    return _prefs.getString(_voiceRehearsalLinkedSpeechIdKey);
+  }
+
+  Future<void> setVoiceRehearsalLinkedSpeechId(String? speechId) async {
+    if (speechId == null || speechId.isEmpty) {
+      await _prefs.remove(_voiceRehearsalLinkedSpeechIdKey);
+      return;
+    }
+    await _prefs.setString(_voiceRehearsalLinkedSpeechIdKey, speechId);
+  }
+
+  /// Tentativas com `createdAt` na semana ISO atual (segunda a domingo).
+  Future<int> countVoiceRehearsalAttemptsThisWeek() async {
+    final attempts = await getVoiceRehearsalAttempts();
+    final now = DateTime.now();
+    final weekStart = _startOfIsoWeek(now);
+    final weekEnd = weekStart.add(const Duration(days: 7));
+    return attempts
+        .where(
+          (a) =>
+              !a.createdAt.isBefore(weekStart) && a.createdAt.isBefore(weekEnd),
+        )
+        .length;
+  }
+
+  static DateTime _startOfIsoWeek(DateTime date) {
+    final local = DateTime(date.year, date.month, date.day);
+    final weekday = local.weekday;
+    return local.subtract(Duration(days: weekday - 1));
+  }
 }

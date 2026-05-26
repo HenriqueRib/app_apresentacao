@@ -50,11 +50,20 @@ class AssentinelStudy {
         'updated_at': updatedAt.toIso8601String(),
       };
 
-  factory AssentinelStudy.fromJson(Map<String, dynamic> json) {
-    // Tratar IDs que podem vir como inteiros do backend
-    final rawId = json['id'];
+  static String? parseId(Map<String, dynamic> json) {
+    for (final key in ['id', 'estudo_id', 'study_id', 'assentinel_id']) {
+      final value = json[key];
+      if (value == null) continue;
+      final text = value.toString().trim();
+      if (text.isNotEmpty) return text;
+    }
+    return null;
+  }
+
+  factory AssentinelStudy.fromJson(Map<String, dynamic> json, {String? fallbackId}) {
+    final id = parseId(json) ?? fallbackId ?? '';
     return AssentinelStudy(
-      id: rawId?.toString() ?? '',
+      id: id,
       conteudoEstudo: (json['conteudo_estudo'] ?? json['conteudo'] ?? '').toString(),
       comentarioInicial: (json['comentario_inicial'] ?? json['inicial'] ?? json['comment_inicial'])?.toString(),
       comentarioFinal: (json['comentario_final'] ?? json['final'] ?? json['comment_final'])?.toString(),

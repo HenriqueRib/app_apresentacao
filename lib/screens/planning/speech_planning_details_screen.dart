@@ -132,14 +132,40 @@ class _SpeechPlanningDetailsScreenState extends State<SpeechPlanningDetailsScree
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<int?>(
+              isExpanded: true,
               value: _focusCharacteristicId,
               decoration: const InputDecoration(labelText: 'Característica em Foco'),
               items: [
-                const DropdownMenuItem(value: null, child: Text('Nenhuma')),
-                ...characteristics.map((c) => DropdownMenuItem(
-                  value: c.id,
-                  child: Text('${c.id}. ${c.title}'),
-                )),
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text('Nenhuma', overflow: TextOverflow.ellipsis),
+                ),
+                ...characteristics.map(
+                  (c) => DropdownMenuItem(
+                    value: c.id,
+                    child: Text(
+                      '${c.id}. ${c.title}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ],
+              selectedItemBuilder: (context) => [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Nenhuma', overflow: TextOverflow.ellipsis),
+                ),
+                ...characteristics.map(
+                  (c) => Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${c.id}. ${c.title}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
               ],
               onChanged: (val) => setState(() => _focusCharacteristicId = val),
             ),

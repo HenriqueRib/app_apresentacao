@@ -7,6 +7,7 @@ import 'partes/partes_list_screen.dart';
 import 'timer/presentation_timer_pro_screen.dart';
 import 'studio/study_studio_list_screen.dart';
 import 'bet_guide/self_assessment_screen.dart';
+import 'bet_guide/voice_rehearsal_screen.dart';
 import 'shinyashiki_masterclass/shinyashiki_masterclass_screen.dart';
 
 class ToolsHubSection extends StatelessWidget {
@@ -93,6 +94,15 @@ class ToolsHubSection extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => const StudyStudioListScreen(),
                 ),
+              ),
+            ),
+            _ToolCard(
+              title: 'Ensaio be-T',
+              subtitle: 'Nota ao vivo · histórico',
+              icon: Icons.mic,
+              color: AppTheme.secondaryColor,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const VoiceRehearsalScreen()),
               ),
             ),
             _ToolCard(

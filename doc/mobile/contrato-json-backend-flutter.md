@@ -112,6 +112,7 @@ Legenda: ✅ implementado no repo · 🟡 parcial · ❌ planejado · 🔒 auth 
 | `GET /estudo/progresso/{id}` | ❌ P1 |
 | `POST /ensaio/registrar` | ❌ P1 |
 | `GET /ensaio/metas-tempo` | ❌ P1 |
+| `POST /ensaio/analisar` | ❌ P1 — ver [contrato-ensaio-analise-online.md](./contrato-ensaio-analise-online.md) |
 | `POST /aprimorar/feedback` | ❌ P1 |
 | `POST/GET /avaliacoes-orador` | ❌ P2 🔒 |
 
@@ -307,6 +308,10 @@ Backend: coluna JSON `metadados` em `discursos` (migration) ou reutilizar campo 
 }
 ```
 
+### POST `/ensaio/analisar`
+
+Análise online pós-ensaio (transcrição + métricas locais). Contrato completo: [contrato-ensaio-analise-online.md](./contrato-ensaio-analise-online.md).
+
 ---
 
 ## POST `/aprimorar/feedback`
@@ -426,3 +431,4 @@ Backend: coluna JSON `metadados` em `discursos` (migration) ou reutilizar campo 
 | Data | Alteração |
 |------|-----------|
 | 21/05/2026 | Documento inicial alinhado ao briefing Flutter; rotas `/avaliar/esboco`, `/aprimorar/feedback` como canônicas |
+| 25/05/2026 | Adicionada rota `POST /ensaio/analisar` (análise online ensaio be-T) |

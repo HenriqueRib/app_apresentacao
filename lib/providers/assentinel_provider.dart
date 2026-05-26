@@ -35,6 +35,19 @@ class AssentinelProvider extends ChangeNotifier {
     }
   }
 
+  List<AssentinelStudy> _ensureValidIds(List<AssentinelStudy> studies) {
+    var changed = false;
+    final fixed = studies.map((study) {
+      if (study.id.trim().isNotEmpty) return study;
+      changed = true;
+      return study.copyWith(id: _uuid.v4());
+    }).toList();
+    if (changed) {
+      debugPrint('Assentinel: estudos sem ID do servidor receberam ID local.');
+    }
+    return fixed;
+  }
+
   Map<String, String> _normalizeSettings(Map<String, String> raw) {
     return {
       'prompt_inicial': raw['prompt_inicial'] ?? '',
@@ -58,13 +71,20 @@ class AssentinelProvider extends ChangeNotifier {
     notifyListeners();
 
     final storage = await StorageService.getInstance();
-    _studies = await storage.getAssentinelStudies();
+    final stored = await storage.getAssentinelStudies();
+    final hadInvalidId = stored.any((s) => s.id.trim().isEmpty);
+    _studies = _ensureValidIds(stored);
+    if (hadInvalidId) {
+      await storage.saveAssentinelStudies(_studies);
+    }
     _mergeSettings(_normalizeSettings(await storage.getAssentinelSettings()));
     _isLoading = false;
     notifyListeners();
 
     try {
-      final backendList = await _apiService.getBackendAssentinelStudies();
+      final backendList = _ensureValidIds(
+        await _apiService.getBackendAssentinelStudies(),
+      );
       _studies = backendList;
       await storage.saveAssentinelStudies(_studies);
       _syncError = null;
@@ -141,10 +161,19 @@ class AssentinelProvider extends ChangeNotifier {
   }
 
   Future<void> generateComment(String studyId, String type) async {
+    final id = studyId.trim();
+    if (id.isEmpty) {
+      _syncError =
+          'Este estudo não tem identificador válido. Exclua-o e importe o texto novamente.';
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
+    _syncError = null;
     notifyListeners();
 
-    final index = _studies.indexWhere((s) => s.id == studyId);
+    final index = _studies.indexWhere((s) => s.id == id);
     if (index == -1) {
       _isLoading = false;
       notifyListeners();
@@ -153,7 +182,7 @@ class AssentinelProvider extends ChangeNotifier {
 
     try {
       final generatedText =
-          await _apiService.generateAssentinelComment(studyId, type);
+          await _apiService.generateAssentinelComment(id, type);
 
       AssentinelStudy updated;
       if (type == 'comentario-inicial') {

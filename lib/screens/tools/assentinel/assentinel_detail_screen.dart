@@ -28,16 +28,46 @@ class _AssentinelDetailScreenState extends State<AssentinelDetailScreen> {
         }
 
         final loading = provider.isLoading;
+        final hasValidId = study.id.trim().isNotEmpty;
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Estudo #${study.id}'),
+            title: Text(
+              hasValidId ? 'Estudo #${study.id}' : 'Estudo (sem ID)',
+            ),
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,
           ),
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (!hasValidId)
+                MaterialBanner(
+                  content: const Text(
+                    'Este estudo perdeu o identificador. Exclua e importe o texto novamente.',
+                  ),
+                  leading: const Icon(Icons.warning_amber),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Voltar'),
+                    ),
+                  ],
+                ),
+              if (provider.syncError != null)
+                MaterialBanner(
+                  content: Text(
+                    provider.syncError!,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  leading: const Icon(Icons.cloud_off),
+                  actions: [
+                    TextButton(
+                      onPressed: () => provider.load(),
+                      child: const Text('Tentar de novo'),
+                    ),
+                  ],
+                ),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -71,16 +101,13 @@ class _AssentinelDetailScreenState extends State<AssentinelDetailScreen> {
                 accentColor: Colors.blue,
                 isLoading: loading,
                 generateLabel: 'Gerar inicial',
-                onGenerate: study.comentarioInicial == null
+                onGenerate: hasValidId
                     ? () => provider.generateComment(
                           study.id,
                           'comentario-inicial',
                         )
-                    : () => provider.generateComment(
-                          study.id,
-                          'comentario-inicial',
-                        ),
-                onImprove: study.comentarioInicial != null
+                    : null,
+                onImprove: hasValidId && study.comentarioInicial != null
                     ? () => provider.generateComment(
                           study.id,
                           'comentario-inicial',
@@ -94,11 +121,13 @@ class _AssentinelDetailScreenState extends State<AssentinelDetailScreen> {
                 accentColor: AppTheme.warningColor,
                 isLoading: loading,
                 generateLabel: 'Gerar final',
-                onGenerate: () => provider.generateComment(
-                  study.id,
-                  'comentario-final',
-                ),
-                onImprove: study.comentarioFinal != null
+                onGenerate: hasValidId
+                    ? () => provider.generateComment(
+                          study.id,
+                          'comentario-final',
+                        )
+                    : null,
+                onImprove: hasValidId && study.comentarioFinal != null
                     ? () => provider.generateComment(
                           study.id,
                           'comentario-final',
@@ -115,12 +144,12 @@ class _AssentinelDetailScreenState extends State<AssentinelDetailScreen> {
                     study.comentarioInicial != null &&
                     study.comentarioFinal != null,
                 generateLabel: 'Gerar resumo',
-                onGenerate:
-                    study.comentarioInicial != null &&
-                            study.comentarioFinal != null
-                        ? () => provider.generateComment(study.id, 'resumo')
-                        : null,
-                onImprove: study.resumoComentarios != null
+                onGenerate: hasValidId &&
+                        study.comentarioInicial != null &&
+                        study.comentarioFinal != null
+                    ? () => provider.generateComment(study.id, 'resumo')
+                    : null,
+                onImprove: hasValidId && study.resumoComentarios != null
                     ? () => provider.generateComment(study.id, 'resumo')
                     : null,
               ),

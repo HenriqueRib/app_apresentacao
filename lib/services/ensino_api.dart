@@ -3,12 +3,14 @@ import 'dart:convert';
 import '../core/constants/api_routes.dart';
 import '../core/utils/api_http_helper.dart';
 import '../core/utils/api_json_helpers.dart';
+import '../models/voice_rehearsal_online_analysis.dart';
 
 /// Service para rotas de ensino (P1): Ensaio, Aprimorar, Estudo guiado.
 ///
 /// Rotas do backend:
 ///   - POST /v1/ensaio/registrar
 ///   - GET  /v1/ensaio/metas-tempo
+///   - POST /v1/ensaio/analisar
 ///   - POST /v1/aprimorar/feedback
 ///   - POST /v1/estudo/pesquisa
 ///   - POST /v1/estudo/meditacao
@@ -16,6 +18,7 @@ import '../core/utils/api_json_helpers.dart';
 ///   - GET  /v1/estudo/progresso/{discurso_id}
 class EnsinoApi {
   static const Duration _timeout = Duration(seconds: 60);
+  static const Duration _analysisTimeout = Duration(seconds: 90);
 
   // ==========================================
   // ENSAIO
@@ -71,6 +74,29 @@ class EnsinoApi {
       return MetasTempo.fromJson(data);
     }
     throw Exception('Falha ao obter metas de tempo: ${response.statusCode}');
+  }
+
+  /// Análise online pós-ensaio (transcrição + métricas locais).
+  Future<VoiceRehearsalOnlineAnalysis> analisarEnsaioOnline(
+    Map<String, dynamic> body,
+  ) async {
+    final response = await ApiHttpHelper.post(
+      ApiRoutes.ensaioAnalisar,
+      body: jsonEncode(body),
+      timeout: _analysisTimeout,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final decoded = jsonDecode(response.body);
+      final data = unwrapData(decoded);
+      return VoiceRehearsalOnlineAnalysis.fromApiResponse(data);
+    }
+    if (response.statusCode == 400 || response.statusCode == 422) {
+      throw Exception(
+        'Dados insuficientes para análise online (${response.statusCode}).',
+      );
+    }
+    throw Exception('Falha na análise online: ${response.statusCode}');
   }
 
   // ==========================================

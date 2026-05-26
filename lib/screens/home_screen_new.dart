@@ -4,7 +4,14 @@ import '../core/theme/app_theme.dart';
 import '../providers/speech_provider.dart';
 import '../models/speech.dart';
 import '../services/characteristics_service.dart';
-import '../services/api_service.dart';
+import '../widgets/shell/custom_bottom_nav.dart';
+import '../widgets/shell/gradient_background.dart';
+import '../widgets/shell/gradient_primary_button.dart';
+import '../widgets/shell/home_header.dart';
+import '../widgets/shell/performance_cycle_card.dart';
+import '../widgets/shell/promo_carousel.dart';
+import '../widgets/shell/quick_tools_grid.dart';
+import '../widgets/shell/staggered_entrance.dart';
 import 'planning/speech_planning_screen.dart';
 import 'planning/create_outline_screen.dart';
 import 'planning/speech_planning_details_screen.dart';
@@ -12,9 +19,10 @@ import 'preparation/outline_editor_screen.dart';
 import 'training/training_module_screen.dart';
 import 'execution/stage_mode_new_screen.dart';
 import 'dashboard/improvement_dashboard_screen.dart';
+import 'tools/bet_guide/voice_rehearsal_screen.dart';
+import '../widgets/voice_rehearsal_weekly_progress_card.dart';
 import 'characteristics/characteristics_library_screen.dart';
-import 'tools/tools_hub_section.dart';
-import 'tools/meeting/meeting_hub_screen.dart';
+import 'tools/discursos/discursos_admin_screen.dart';
 
 class HomeScreenNew extends StatefulWidget {
   const HomeScreenNew({super.key});
@@ -41,60 +49,101 @@ class _HomeScreenNewState extends State<HomeScreenNew> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          _HomeTab(),
-          CharacteristicsLibraryScreen(),
-          ImprovementDashboardScreen(),
-          CreateOutlineScreen(),
-        ],
+    return Theme(
+      data: AppTheme.shellTheme,
+      child: GradientBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          drawer: _buildDrawer(context),
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 150),
+            child: IndexedStack(
+              key: ValueKey<int>(_currentIndex),
+              index: _currentIndex,
+              children: const [
+                _HomeTab(),
+                CharacteristicsLibraryScreen(),
+                ImprovementDashboardScreen(),
+                CreateOutlineScreen(),
+              ],
+            ),
+          ),
+          bottomNavigationBar: CustomBottomNav(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (index) {
+              setState(() => _currentIndex = index);
+            },
+          ),
+        ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Início',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: '53 Lições',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights),
-            label: 'Progresso',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.auto_stories_outlined),
-            selectedIcon: Icon(Icons.auto_stories),
-            label: 'Criar Esboço',
-          ),
-        ],
-      ),
+    );
+  }
 
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppTheme.shellSurfaceDark,
+      child: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                gradient: AppTheme.shellBackgroundGradient,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Poder de Convencer',
+                    style: TextStyle(
+                      color: AppTheme.shellTextPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Método Shinyashiki',
+                    style: TextStyle(color: AppTheme.shellTextSecondary),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.record_voice_over,
+                  color: AppTheme.shellAccentTeal),
+              title: const Text('Discursos'),
+              onTap: () {
+                Navigator.pop(context);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const SpeechPlanningScreen(),
+                    builder: (_) => const DiscursosAdminScreen(),
                   ),
                 );
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Novo Discurso'),
-            )
-          : null,
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline,
+                  color: AppTheme.shellAccentTeal),
+              title: const Text('Sobre'),
+              onTap: () {
+                Navigator.pop(context);
+                showAboutDialog(
+                  context: context,
+                  applicationName: 'Poder de Convencer',
+                  applicationVersion: '1.0.0',
+                  children: const [
+                    Text(
+                      'App de treinamento em oratória com o método Shinyashiki e as 53 características.',
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -104,48 +153,66 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar.large(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Poder de Convencer',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              Text(
-                'Método Shinyashiki + 53 Características',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white70,
-                    ),
-              ),
-            ],
-          ),
-          backgroundColor: AppTheme.primaryColor,
-          foregroundColor: Colors.white,
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildMethodCycle(context),
-                const SizedBox(height: 24),
-                const ToolsHubSection(),
-                const SizedBox(height: 16),
-                _buildWeeklyCommentsCard(context),
-                const SizedBox(height: 24),
-                _buildSpeechesList(context),
-              ],
+    return SafeArea(
+      bottom: false,
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: StaggeredEntrance(
+              index: 0,
+              child: const HomeHeader(),
             ),
           ),
-        ),
-      ],
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StaggeredEntrance(
+                    index: 1,
+                    child: _buildMethodCycle(context),
+                  ),
+                  const StaggeredEntrance(
+                    index: 2,
+                    child: VoiceRehearsalWeeklyProgressCard(),
+                  ),
+                  const SizedBox(height: 24),
+                  const StaggeredEntrance(
+                    index: 3,
+                    child: QuickToolsGrid(),
+                  ),
+                  const SizedBox(height: 20),
+                  const StaggeredEntrance(
+                    index: 4,
+                    child: PromoCarousel(),
+                  ),
+                  const SizedBox(height: 20),
+                  StaggeredEntrance(
+                    index: 5,
+                    child: GradientPrimaryButton(
+                      label: 'Novo Discurso',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SpeechPlanningScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  StaggeredEntrance(
+                    index: 6,
+                    child: _buildSpeechesList(context),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -153,71 +220,101 @@ class _HomeTab extends StatelessWidget {
     return Consumer<SpeechProvider>(
       builder: (context, provider, _) {
         final currentSpeech = provider.currentSpeech;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ciclo de Performance',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              currentSpeech == null
-                  ? 'Selecione um discurso para usar as etapas.'
-                  : 'Discurso em foco: ${currentSpeech.title}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _CycleStepCard(
-                    step: 1,
-                    title: 'Planejar',
-                    icon: Icons.track_changes,
-                    color: Colors.blue,
-                    description: 'Edite objetivo e estrutura do discurso',
-                    onTap: () => _openCycleStep(context, 1, currentSpeech),
-                  ),
-                  _CycleStepCard(
-                    step: 2,
-                    title: 'Preparar',
-                    icon: Icons.edit_note,
-                    color: Colors.orange,
-                    description: 'Construa esboço com método L.E.I.A.',
-                    onTap: () => _openCycleStep(context, 2, currentSpeech),
-                  ),
-                  _CycleStepCard(
-                    step: 3,
-                    title: 'Treinar',
-                    icon: Icons.fitness_center,
-                    color: Colors.purple,
-                    description: 'Ensaie com temporizador e checklist',
-                    onTap: () => _openCycleStep(context, 3, currentSpeech),
-                  ),
-                  _CycleStepCard(
-                    step: 4,
-                    title: 'Executar',
-                    icon: Icons.record_voice_over,
-                    color: AppTheme.accentColor,
-                    description: 'Modo Palco com teleprompter',
-                    onTap: () => _openCycleStep(context, 4, currentSpeech),
-                  ),
-                  _CycleStepCard(
-                    step: 5,
-                    title: 'Aprimorar',
-                    icon: Icons.trending_up,
-                    color: AppTheme.secondaryColor,
-                    description: 'Notas e observações do discurso',
-                    onTap: () => _openCycleStep(context, 5, currentSpeech),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        final activeStep = PerformanceCycleCard.activeStepFromStatus(
+          currentSpeech?.status,
+        );
+
+        final steps = [
+          CycleStepData(
+            step: 1,
+            title: 'Planejar',
+            description: 'Defina objetivo e estrutura do discurso',
+            onTap: () => _openCycleStep(context, 1, currentSpeech),
+          ),
+          CycleStepData(
+            step: 2,
+            title: 'Preparar',
+            description: 'Construa esboço com método L.E.I.A.',
+            onTap: () => _openCycleStep(context, 2, currentSpeech),
+          ),
+          CycleStepData(
+            step: 3,
+            title: 'Treinar',
+            description: 'Ensaie com temporizador e checklist',
+            onTap: () => _openCycleStep(context, 3, currentSpeech),
+          ),
+          CycleStepData(
+            step: 4,
+            title: 'Executar',
+            description: 'Modo Palco com teleprompter',
+            onTap: () => _openCycleStep(context, 4, currentSpeech),
+          ),
+          CycleStepData(
+            step: 5,
+            title: 'Aprimorar',
+            description: 'Notas e observações do discurso',
+            onTap: () => _openCycleStep(context, 5, currentSpeech),
+          ),
+        ];
+
+        return PerformanceCycleCard(
+          steps: steps,
+          activeStep: activeStep,
+          focusSpeechTitle: currentSpeech?.title,
+          onViewAllSteps: () {
+            if (currentSpeech == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Selecione um discurso para ver as etapas.'),
+                ),
+              );
+              return;
+            }
+            _openCycleStep(context, activeStep, currentSpeech);
+          },
         );
       },
+    );
+  }
+
+  void _showTrainingChoice(BuildContext context, Speech speech) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.mic),
+              title: const Text('Ensaio be-T'),
+              subtitle: const Text('Coach vocal em tempo real'),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        VoiceRehearsalScreen(initialSpeech: speech),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.timer),
+              title: const Text('Módulo de treino'),
+              subtitle: const Text('Temporizador e checklist'),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TrainingModuleScreen(speech: speech),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -240,8 +337,8 @@ class _HomeTab extends StatelessWidget {
         destination = OutlineEditorScreen(speech: speech);
         break;
       case 3:
-        destination = TrainingModuleScreen(speech: speech);
-        break;
+        _showTrainingChoice(context, speech);
+        return;
       case 4:
         destination = StageModeNewScreen(speech: speech);
         break;
@@ -261,7 +358,9 @@ class _HomeTab extends StatelessWidget {
     return Consumer<SpeechProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: AppTheme.shellAccentTeal),
+          );
         }
 
         if (provider.speeches.isEmpty) {
@@ -296,140 +395,22 @@ class _HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklyCommentsCard(BuildContext context) {
-    return FutureBuilder<WeeklyCommentsResponse>(
-      future: ApiService().getWeeklyComments(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  SizedBox(width: 12),
-                  Text('Carregando comentarios da semana...'),
-                ],
-              ),
-            ),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Comentarios da semana',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Nao foi possivel carregar agora. Verifique a conexao com o backend.',
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        final data = snapshot.data;
-        if (data == null) {
-          return const SizedBox.shrink();
-        }
-
-        final preview = data.comentarioTexts.take(2).toList();
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MeetingHubScreen()),
-            ),
-            child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Comentarios da semana',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, size: 16),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  data.semana,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                if (data.textoJoiaEspiritual.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Joia espiritual: ${data.textoJoiaEspiritual}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-                const SizedBox(height: 10),
-                if (preview.isEmpty)
-                  Text(
-                    'Sem comentarios cadastrados para esta semana.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  )
-                else
-                  ...preview.map(
-                    (comment) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text('- $comment'),
-                    ),
-                  ),
-                if (data.comentarioTexts.length > 2)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Toque para ver todos (${data.comentarioTexts.length})',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.primaryColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildEmptyState(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.shellSurfaceDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: AppTheme.shellAccentTeal.withValues(alpha: 0.2),
+        ),
       ),
       child: Column(
         children: [
           Icon(
             Icons.record_voice_over,
             size: 64,
-            color: Colors.grey.shade400,
+            color: AppTheme.shellTextSecondary.withValues(alpha: 0.6),
           ),
           const SizedBox(height: 16),
           Text(
@@ -471,72 +452,6 @@ class _HomeTab extends StatelessWidget {
   }
 }
 
-class _CycleStepCard extends StatelessWidget {
-  final int step;
-  final String title;
-  final IconData icon;
-  final Color color;
-  final String description;
-  final VoidCallback onTap;
-
-  const _CycleStepCard({
-    required this.step,
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.description,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 170,
-      child: Card(
-        margin: const EdgeInsets.only(right: 12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(icon, color: color, size: 24),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$step. $title',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _SpeechCard extends StatelessWidget {
   final Speech speech;
   final bool isSelected;
@@ -552,13 +467,19 @@ class _SpeechCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final statusColor = _getStatusColor();
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: AppTheme.shellSurfaceDark,
         borderRadius: BorderRadius.circular(16),
-        side: isSelected
-            ? const BorderSide(color: AppTheme.primaryColor, width: 2)
-            : BorderSide.none,
+        border: Border.all(
+          color: isSelected
+              ? AppTheme.shellAccentTeal
+              : AppTheme.shellAccentTeal.withValues(alpha: 0.1),
+          width: isSelected ? 2 : 1,
+        ),
       ),
       child: InkWell(
         onTap: onTap,
@@ -571,13 +492,10 @@ class _SpeechCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _getStatusColor().withValues(alpha: 0.1),
+                  color: statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  _getStatusIcon(),
-                  color: _getStatusColor(),
-                ),
+                child: Icon(_getStatusIcon(), color: statusColor),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -599,14 +517,14 @@ class _SpeechCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getStatusColor().withValues(alpha: 0.1),
+                            color: statusColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             _getStatusText(),
                             style: TextStyle(
                               fontSize: 12,
-                              color: _getStatusColor(),
+                              color: statusColor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -623,11 +541,11 @@ class _SpeechCard extends StatelessWidget {
                   ],
                 ),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: onAction,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _getStatusColor(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                style: FilledButton.styleFrom(
+                  backgroundColor: statusColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                 ),
                 child: Text(_getActionText()),
               ),
@@ -647,9 +565,9 @@ class _SpeechCard extends StatelessWidget {
       case SpeechStatus.training:
         return Colors.purple;
       case SpeechStatus.ready:
-        return AppTheme.accentColor;
+        return AppTheme.shellAccentTeal;
       case SpeechStatus.executed:
-        return AppTheme.successColor;
+        return AppTheme.shellAccentGreen;
       case SpeechStatus.archived:
         return Colors.grey;
     }

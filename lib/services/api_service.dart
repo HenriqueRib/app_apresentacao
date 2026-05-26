@@ -432,9 +432,13 @@ class ApiService {
   }
 
   Future<String> generateAssentinelComment(String studyId, String type) async {
+    final id = studyId.trim();
+    if (id.isEmpty) {
+      throw ArgumentError('ID do estudo Assentinel não pode ser vazio');
+    }
     // type: comentario-inicial | comentario-final | resumo (sem body)
     final response = await ApiHttpHelper.post(
-      '${ApiRoutes.assentinelEstudos}/$studyId/$type',
+      '${ApiRoutes.assentinelEstudos}/$id/$type',
       timeout: _requestTimeout,
     );
 

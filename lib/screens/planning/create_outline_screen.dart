@@ -4,6 +4,8 @@ import '../../core/theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../providers/speech_provider.dart';
 import '../../models/speech.dart';
+import '../../widgets/shell/shell_tab_scaffold.dart';
+import '../../widgets/shell/gradient_primary_button.dart';
 
 class CreateOutlineScreen extends StatefulWidget {
   const CreateOutlineScreen({super.key});
@@ -28,7 +30,9 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
   Future<void> _generateOutline() async {
     if (_contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, insira as informações do discurso.')),
+        const SnackBar(
+          content: Text('Por favor, insira as informações do discurso.'),
+        ),
       );
       return;
     }
@@ -39,7 +43,8 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
     });
 
     try {
-      final result = await ApiService().generateManuscript(_contentController.text);
+      final result =
+          await ApiService().generateManuscript(_contentController.text);
       setState(() {
         _result = result;
         if (_titleController.text.isEmpty && result.containsKey('titulo')) {
@@ -54,9 +59,7 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -64,7 +67,9 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
   Future<void> _saveSpeech() async {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, defina um título para o discurso.')),
+        const SnackBar(
+          content: Text('Por favor, defina um título para o discurso.'),
+        ),
       );
       return;
     }
@@ -72,22 +77,26 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
     if (_result == null) return;
 
     final provider = context.read<SpeechProvider>();
-    
-    // Create outline from result
+
     final outline = SpeechOutline(
       introduction: _result!['introducao'] ?? '',
       conclusion: _result!['conclusao'] ?? '',
-      mainPoints: (_result!['pontos_principais'] as List?)?.map((p) => MainPoint(
-        id: DateTime.now().millisecondsSinceEpoch.toString() + p['titulo'],
-        title: p['titulo'] ?? '',
-        content: p['conteudo'] ?? '',
-      )).toList() ?? [],
+      mainPoints: (_result!['pontos_principais'] as List?)
+              ?.map(
+                (p) => MainPoint(
+                  id: '${DateTime.now().millisecondsSinceEpoch}${p['titulo']}',
+                  title: p['titulo'] ?? '',
+                  content: p['conteudo'] ?? '',
+                ),
+              )
+              .toList() ??
+          [],
     );
 
     final speech = await provider.createSpeech(
       title: _titleController.text,
-      type: SpeechType.public30min, // Default
-      goalType: SpeechGoalType.helpOthers, // Default
+      type: SpeechType.public30min,
+      goalType: SpeechGoalType.helpOthers,
       centralObjective: _result!['objetivo_central'] ?? '',
     );
 
@@ -95,9 +104,11 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Discurso criado e salvo com sucesso!')),
+        const SnackBar(
+          content: Text('Discurso criado e salvo com sucesso!'),
+          backgroundColor: AppTheme.shellAccentGreen,
+        ),
       );
-      // Reset or navigate
       setState(() {
         _result = null;
         _contentController.clear();
@@ -108,18 +119,16 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Criar Esboço'),
-      ),
+    return ShellTabScaffold(
+      title: 'Criar Esboço',
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -144,17 +153,22 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
+                      child: FilledButton.icon(
                         onPressed: _isLoading ? null : _generateOutline,
-                        icon: _isLoading 
-                          ? const SizedBox(
-                              width: 20, 
-                              height: 20, 
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
-                            )
-                          : const Icon(Icons.auto_awesome),
-                        label: Text(_isLoading ? 'Processando...' : 'Gerar Esboço via IA'),
-                        style: ElevatedButton.styleFrom(
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.auto_awesome),
+                        label: Text(
+                          _isLoading ? 'Processando...' : 'Gerar Esboço via IA',
+                        ),
+                        style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.secondaryColor,
                         ),
                       ),
@@ -193,13 +207,14 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
         _buildSectionCard('Introdução', _result!['introducao']),
         _buildSectionCard('Conclusão', _result!['conclusao']),
         if (_result!['pontos_principais'] != null)
-          ...(_result!['pontos_principais'] as List).map((p) => 
-            _buildSectionCard('Ponto: ${p['titulo']}', p['conteudo'])
+          ...(_result!['pontos_principais'] as List).map(
+            (p) => _buildSectionCard('Ponto: ${p['titulo']}', p['conteudo']),
           ),
         const SizedBox(height: 24),
-        ElevatedButton(
+        GradientPrimaryButton(
+          label: 'Salvar no Aplicativo',
+          icon: Icons.save,
           onPressed: _saveSpeech,
-          child: const Text('Salvar no Aplicativo'),
         ),
         const SizedBox(height: 32),
       ],
@@ -210,18 +225,18 @@ class _CreateOutlineScreenState extends State<CreateOutlineScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppTheme.primaryColor,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: AppTheme.shellAccentTeal,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            const Divider(),
+            const Divider(color: AppTheme.shellTextSecondary),
             Text(
               content ?? 'Sem conteúdo gerado.',
               style: Theme.of(context).textTheme.bodyLarge,

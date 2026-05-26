@@ -40,6 +40,7 @@ class ApiRoutes {
   // --- Ensaio (P1) ---
   static const ensaioRegistrar = '/v1/ensaio/registrar';
   static const ensaioMetasTempo = '/v1/ensaio/metas-tempo';
+  static const ensaioAnalisar = '/v1/ensaio/analisar';
 
   // --- Aprimorar (P1) ---
   static const aprimorarFeedback = '/v1/aprimorar/feedback';

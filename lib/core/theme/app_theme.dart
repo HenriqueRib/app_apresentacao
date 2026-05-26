@@ -14,6 +14,143 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF666666);
   static const Color textLight = Color(0xFF999999);
 
+  // Shell (home dark gradient theme)
+  static const Color shellGradientTop = Color(0xFF0A1628);
+  static const Color shellGradientBottom = Color(0xFF0F3D3E);
+  static const Color shellSurfaceDark = Color(0xFF152A45);
+  static const Color shellAccentTeal = Color(0xFF2DD4BF);
+  static const Color shellAccentGreen = Color(0xFF22C55E);
+  static const Color shellTextPrimary = Colors.white;
+  static const Color shellTextSecondary = Color(0xFF94A3B8);
+  static const Color shellNavBackground = Color(0xFF0A0F1A);
+
+  static const LinearGradient shellBackgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [shellGradientTop, shellGradientBottom],
+  );
+
+  static const LinearGradient shellCtaGradient = LinearGradient(
+    colors: [shellAccentTeal, shellAccentGreen],
+  );
+
+  static ThemeData get shellTheme {
+    const shellTextTheme = TextTheme(
+      headlineLarge: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+        color: shellTextPrimary,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: shellTextPrimary,
+      ),
+      headlineSmall: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: shellTextPrimary,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: shellTextPrimary,
+      ),
+      titleMedium: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: shellTextPrimary,
+      ),
+      titleSmall: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: shellTextPrimary,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 16,
+        color: shellTextPrimary,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        color: shellTextSecondary,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        color: shellTextSecondary,
+      ),
+      labelLarge: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: shellTextPrimary,
+      ),
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: Colors.transparent,
+      colorScheme: const ColorScheme.dark(
+        primary: shellAccentTeal,
+        secondary: shellAccentGreen,
+        surface: shellSurfaceDark,
+        onSurface: shellTextPrimary,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: shellTextPrimary,
+        elevation: 0,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        color: shellSurfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      dividerColor: shellTextSecondary.withValues(alpha: 0.2),
+      iconTheme: const IconThemeData(color: shellTextPrimary),
+      textTheme: shellTextTheme,
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: shellSurfaceDark,
+        hintStyle: const TextStyle(color: shellTextSecondary),
+        labelStyle: const TextStyle(color: shellTextSecondary),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: shellTextSecondary.withValues(alpha: 0.3)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: shellTextSecondary.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: shellAccentTeal, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: shellSurfaceDark,
+        contentTextStyle: shellTextTheme.bodyMedium,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: shellNavBackground,
+        indicatorColor: shellAccentTeal.withValues(alpha: 0.2),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: shellAccentTeal,
+            );
+          }
+          return const TextStyle(fontSize: 12, color: shellTextSecondary);
+        }),
+      ),
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

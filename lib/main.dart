@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/presentation_provider.dart';
@@ -11,10 +12,15 @@ import 'providers/oratory_guide_provider.dart';
 import 'providers/assentinel_provider.dart';
 import 'providers/parte_provider.dart';
 import 'providers/discurso_admin_provider.dart';
+import 'providers/voice_rehearsal_provider.dart';
+import 'providers/voice_recordings_provider.dart';
+import 'providers/voice_rehearsal_history_provider.dart';
+import 'providers/voice_volume_test_provider.dart';
 import 'screens/splash/splash_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('pt_BR', null);
   runApp(const MyApp());
 }
 
@@ -35,6 +41,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AssentinelProvider()),
         ChangeNotifierProvider(create: (_) => ParteProvider()),
         ChangeNotifierProvider(create: (_) => DiscursoAdminProvider()),
+        ChangeNotifierProvider(create: (_) => VoiceRehearsalProvider()),
+        ChangeNotifierProvider(create: (_) => VoiceRecordingsProvider()),
+        ChangeNotifierProvider(create: (_) => VoiceRehearsalHistoryProvider()),
+        ChangeNotifierProvider(create: (_) => VoiceVolumeTestProvider()),
       ],
       child: MaterialApp(
         title: 'Poder de Convencer',

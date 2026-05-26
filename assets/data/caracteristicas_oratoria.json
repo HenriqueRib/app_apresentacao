@@ -3,7 +3,14 @@
     "book_version": "be-T, Edition 2014",
     "language": "pt-BR",
     "total_characteristics": 53,
-    "source": "Beneficie-se da Escola do Ministério Teocrático"
+    "source": "Beneficie-se da Escola do Ministério Teocrático",
+    "speech_time_defaults": {
+      "intro_pct_min": 8,
+      "intro_pct_max": 15,
+      "conclusion_pct_min": 8,
+      "conclusion_pct_max": 15,
+      "body_pct_min": 70
+    }
   },
   "categories": [
     {
@@ -71,7 +78,11 @@
       "page_reference": 97,
       "category": "Qualidade da Voz",
       "action": "Medite nos pontos de transição e utilize pausas para dar ênfase ou permitir que a assistência processe verdades profundas. Utilize o silêncio estratégico para destacar mudanças de ideia.",
-      "importance": "Pausas bem distribuídas dão clareza à instrução e dão tempo para que as promessas de Deus toquem o íntimo do ouvinte."
+      "importance": "Pausas bem distribuídas dão clareza à instrução e dão tempo para que as promessas de Deus toquem o íntimo do ouvinte.",
+      "evaluation_rubric": [
+        { "id": "pausa_estrategica", "label": "Pausas estratégicas em transições", "auto": true },
+        { "id": "evitar_pausas_longas", "label": "Evitar pausas longas sem motivo", "auto": true }
+      ]
     },
     {
       "id": 6,
@@ -103,7 +114,11 @@
       "page_reference": 111,
       "category": "Qualidade da Voz",
       "action": "Varie o tom, o volume e o ritmo para refletir as emoções da matéria e evitar a monotonia. Medite no sentimento do texto para que as mudanças vocais soem naturais e sinceras.",
-      "importance": "A modulação mantém o interesse vivo e torna a mensagem de Jeová mais persuasiva e agradável ao coração."
+      "importance": "A modulação mantém o interesse vivo e torna a mensagem de Jeová mais persuasiva e agradável ao coração.",
+      "evaluation_rubric": [
+        { "id": "variacao_tom", "label": "Variação de tom e intensidade", "auto": true },
+        { "id": "evitar_monotonia", "label": "Evitar voz monótona", "auto": true }
+      ]
     },
     {
       "id": 10,
@@ -111,7 +126,11 @@
       "page_reference": 115,
       "category": "Sentimento",
       "action": "Prepare o coração antes do proferimento e fale com vivacidade sobre as promessas de Deus. Deixe que sua convicção pessoal transpareça na voz, mostrando a urgência da mensagem.",
-      "importance": "O entusiasmo motiva os ouvintes a agir em harmonia com o que aprendem, resultando em benefícios espirituais duradouros."
+      "importance": "O entusiasmo motiva os ouvintes a agir em harmonia com o que aprendem, resultando em benefícios espirituais duradouros.",
+      "evaluation_rubric": [
+        { "id": "vivacidade_voz", "label": "Vivacidade e convicção na voz", "auto": true },
+        { "id": "ritmo_animado", "label": "Ritmo que transmite interesse", "auto": true }
+      ]
     },
     {
       "id": 11,
@@ -311,7 +330,11 @@
       "page_reference": 206,
       "category": "Técnica de Ensino",
       "action": "Repita termos centrais ou pontos principais ao longo do discurso para fixá-los na mente. Recapitule as ideias principais na conclusão para selar o aprendizado.",
-      "importance": "A repetição é fundamental para que verdades vitais sejam memorizadas e aplicadas no cotidiano dos ouvintes."
+      "importance": "A repetição é fundamental para que verdades vitais sejam memorizadas e aplicadas no cotidiano dos ouvintes.",
+      "evaluation_rubric": [
+        { "id": "repetir_tema", "label": "Repetir termos centrais do tema", "auto": true },
+        { "id": "recapitular_conclusao", "label": "Recapitular pontos na conclusão", "auto": true }
+      ]
     },
     {
       "id": 36,
@@ -319,7 +342,11 @@
       "page_reference": 209,
       "category": "Estrutura",
       "action": "Mantenha todas as partes da apresentação ligadas estritamente à ideia central escolhida. Descarte informações, mesmo que interessantes, que não contribuam para o objetivo do tema.",
-      "importance": "Um tema bem desenvolvido dá unidade ao discurso e garante que a assistência saia com uma mensagem clara e proveitosa."
+      "importance": "Um tema bem desenvolvido dá unidade ao discurso e garante que a assistência saia com uma mensagem clara e proveitosa.",
+      "evaluation_rubric": [
+        { "id": "mencionar_tema", "label": "Manter foco no tema central", "auto": true },
+        { "id": "unidade_discurso", "label": "Unidade entre introdução, corpo e conclusão", "auto": true }
+      ]
     },
     {
       "id": 37,
@@ -327,7 +354,11 @@
       "page_reference": 212,
       "category": "Estrutura",
       "action": "Enuncie suas ideias centrais com frases curtas e claras. Certifique-se de que os pontos principais se sobressaiam nitidamente acima dos detalhes e das ilustrações.",
-      "importance": "Facilita a retenção da matéria e assegura que os conceitos básicos para o progresso espiritual sejam lembrados."
+      "importance": "Facilita a retenção da matéria e assegura que os conceitos básicos para o progresso espiritual sejam lembrados.",
+      "evaluation_rubric": [
+        { "id": "frases_curtas", "label": "Enunciar ideias com clareza", "auto": false },
+        { "id": "pontos_destacados", "label": "Pontos principais distinguíveis", "auto": true }
+      ]
     },
     {
       "id": 38,
@@ -335,7 +366,16 @@
       "page_reference": 215,
       "category": "Estrutura",
       "action": "Comece com uma pergunta instigante ou um cenário real que mostre a relevância da matéria. Mostre imediatamente como o assunto beneficiará a vida dos presentes.",
-      "importance": "Uma introdução eficaz prende a atenção e prepara o coração para receber a instrução de Jeová com entusiasmo."
+      "importance": "Uma introdução eficaz prende a atenção e prepara o coração para receber a instrução de Jeová com entusiasmo.",
+      "evaluation_rubric": [
+        { "id": "captar_atencao", "label": "Captar a atenção da assistência", "auto": true },
+        { "id": "identificar_assunto", "label": "Identificar claramente o assunto", "auto": true },
+        { "id": "mostrar_relevancia", "label": "Mostrar por que o assunto é importante", "auto": true },
+        { "id": "pergunta_instigante", "label": "Usar pergunta ou gancho instigante", "auto": true },
+        { "id": "caso_vida_real", "label": "Caso da vida real ou cenário", "auto": true },
+        { "id": "mencionar_tema", "label": "Mencionar o tema do discurso", "auto": true }
+      ],
+      "time_guidance": { "intro_pct_min": 8, "intro_pct_max": 15 }
     },
     {
       "id": 39,
@@ -343,7 +383,16 @@
       "page_reference": 220,
       "category": "Estrutura",
       "action": "Resuma os pontos principais e indique claramente o que a assistência deve fazer com a informação. Use as palavras finais para motivar a aplicação prática e dar senso de encerramento.",
-      "importance": "A conclusão é a oportunidade final de tocar o coração e impulsionar o ouvinte a trilhar o caminho que Deus ensina."
+      "importance": "A conclusão é a oportunidade final de tocar o coração e impulsionar o ouvinte a trilhar o caminho que Deus ensina.",
+      "evaluation_rubric": [
+        { "id": "relacionar_tema", "label": "Relacionar-se diretamente ao tema", "auto": true },
+        { "id": "resumir_pontos", "label": "Resumir os pontos principais", "auto": true },
+        { "id": "chamada_acao", "label": "Mostrar o que fazer (chamada à ação)", "auto": true },
+        { "id": "motivar", "label": "Motivar com razões ou benefícios", "auto": true },
+        { "id": "frase_final", "label": "Frase final marcante", "auto": true },
+        { "id": "tom_encerramento", "label": "Tom de finalização e convicção", "auto": true }
+      ],
+      "time_guidance": { "conclusion_pct_min": 8, "conclusion_pct_max": 15 }
     },
     {
       "id": 40,
@@ -439,7 +488,18 @@
       "page_reference": 263,
       "category": "Gestão",
       "action": "Cronometre cada seção durante o ensaio para não se estender em pontos secundários. Certifique-se de dedicar tempo suficiente para a conclusão e a aplicação prática.",
-      "importance": "O respeito ao tempo demonstra organização e consideração amorosa pelos ouvintes e pelos demais participantes do programa."
+      "importance": "O respeito ao tempo demonstra organização e consideração amorosa pelos ouvintes e pelos demais participantes do programa.",
+      "evaluation_rubric": [
+        { "id": "proporcao_intro", "label": "Introdução dentro da proporção ideal", "auto": true },
+        { "id": "proporcao_conclusao", "label": "Conclusão com tempo adequado", "auto": true },
+        { "id": "tempo_corpo", "label": "Corpo do discurso bem distribuído", "auto": true }
+      ],
+      "time_guidance": {
+        "intro_pct_min": 8,
+        "intro_pct_max": 15,
+        "conclusion_pct_min": 8,
+        "conclusion_pct_max": 15
+      }
     },
     {
       "id": 52,

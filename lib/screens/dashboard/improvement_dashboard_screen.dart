@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/speech.dart';
 import '../../providers/speech_provider.dart';
 import '../../services/characteristics_service.dart';
+import '../../widgets/shell/shell_tab_scaffold.dart';
 
 class ImprovementDashboardScreen extends StatefulWidget {
   final Speech? initialSpeech;
@@ -19,34 +20,47 @@ class _ImprovementDashboardScreenState
     extends State<ImprovementDashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Aprimoramento'),
-      ),
-      body: Consumer<SpeechProvider>(
-        builder: (context, provider, _) {
-          final stats = provider.getProgressStats();
-          final executed = provider.speeches
-              .where((s) => s.status == SpeechStatus.executed)
-              .toList();
-          final focusedSpeech = widget.initialSpeech ?? provider.currentSpeech;
+  final isEmbeddedTab = widget.initialSpeech == null;
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _buildOverviewCard(stats),
-              if (focusedSpeech != null) ...[
-                const SizedBox(height: 24),
-                _buildFocusedSpeechNotesCard(focusedSpeech),
-              ],
+    final body = Consumer<SpeechProvider>(
+      builder: (context, provider, _) {
+        final stats = provider.getProgressStats();
+        final executed = provider.speeches
+            .where((s) => s.status == SpeechStatus.executed)
+            .toList();
+        final focusedSpeech = widget.initialSpeech ?? provider.currentSpeech;
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildOverviewCard(stats),
+            if (focusedSpeech != null) ...[
               const SizedBox(height: 24),
-              _buildCompetenciesCard(),
-              const SizedBox(height: 24),
-              _buildExecutedSpeechesList(executed),
+              _buildFocusedSpeechNotesCard(focusedSpeech),
             ],
-          );
-        },
-      ),
+            const SizedBox(height: 24),
+            _buildCompetenciesCard(),
+            const SizedBox(height: 24),
+            _buildExecutedSpeechesList(executed),
+          ],
+        );
+      },
+    );
+
+    if (!isEmbeddedTab) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Aprimoramento'),
+          backgroundColor: AppTheme.primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: body,
+      );
+    }
+
+    return ShellTabScaffold(
+      title: 'Progresso',
+      body: body,
     );
   }
 
@@ -69,7 +83,7 @@ class _ImprovementDashboardScreenState
                     icon: Icons.assignment,
                     label: 'Discursos',
                     value: '${stats['totalSpeeches']}',
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.shellAccentTeal,
                   ),
                 ),
                 Expanded(
@@ -77,7 +91,7 @@ class _ImprovementDashboardScreenState
                     icon: Icons.check_circle,
                     label: 'Executados',
                     value: '${stats['executedCount']}',
-                    color: AppTheme.successColor,
+                    color: AppTheme.shellAccentGreen,
                   ),
                 ),
                 Expanded(
@@ -85,7 +99,7 @@ class _ImprovementDashboardScreenState
                     icon: Icons.trending_up,
                     label: 'Taxa Sucesso',
                     value: '${stats['successRate']}%',
-                    color: AppTheme.accentColor,
+                    color: AppTheme.shellAccentTeal,
                   ),
                 ),
               ],
@@ -94,17 +108,19 @@ class _ImprovementDashboardScreenState
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                color: AppTheme.shellAccentTeal.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.lightbulb, color: AppTheme.primaryColor),
+                  const Icon(Icons.lightbulb, color: AppTheme.shellAccentTeal),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'O sucesso é proporcional ao número de pessoas que você ajuda.',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.shellTextPrimary,
+                          ),
                     ),
                   ),
                 ],
@@ -118,9 +134,10 @@ class _ImprovementDashboardScreenState
 
   Widget _buildFocusedSpeechNotesCard(Speech speech) {
     final hasFeedback = speech.feedbackRecord != null;
-    final notesPreview = hasFeedback && speech.feedbackRecord!.lessonsLearned.isNotEmpty
-        ? speech.feedbackRecord!.lessonsLearned
-        : 'Nenhuma observação registrada ainda.';
+    final notesPreview =
+        hasFeedback && speech.feedbackRecord!.lessonsLearned.isNotEmpty
+            ? speech.feedbackRecord!.lessonsLearned
+            : 'Nenhuma observação registrada ainda.';
 
     return Card(
       child: Padding(
@@ -136,7 +153,7 @@ class _ImprovementDashboardScreenState
             Text(
               speech.title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.shellAccentTeal,
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -150,21 +167,28 @@ class _ImprovementDashboardScreenState
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                color: AppTheme.shellAccentTeal.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 notesPreview,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.shellTextPrimary,
+                    ),
               ),
             ),
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
+              child: FilledButton.icon(
                 onPressed: () => _showQuickNotesDialog(speech),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.shellAccentTeal,
+                ),
                 icon: const Icon(Icons.edit_note),
-                label: Text(hasFeedback ? 'Editar Observações' : 'Adicionar Observações'),
+                label: Text(
+                  hasFeedback ? 'Editar Observações' : 'Adicionar Observações',
+                ),
               ),
             ),
           ],
@@ -205,7 +229,7 @@ class _ImprovementDashboardScreenState
                         Text(
                           '${comp.weight.toStringAsFixed(1)}%',
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: AppTheme.primaryColor,
+                                color: AppTheme.shellAccentTeal,
                               ),
                         ),
                       ],
@@ -213,9 +237,11 @@ class _ImprovementDashboardScreenState
                     const SizedBox(height: 4),
                     LinearProgressIndicator(
                       value: comp.weight / 100,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                      backgroundColor:
+                          AppTheme.shellTextSecondary.withValues(alpha: 0.2),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppTheme.shellAccentTeal,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -239,8 +265,11 @@ class _ImprovementDashboardScreenState
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              Icon(Icons.assignment_outlined,
-                  size: 64, color: Colors.grey.shade400),
+              Icon(
+                Icons.assignment_outlined,
+                size: 64,
+                color: AppTheme.shellTextSecondary.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Nenhum discurso executado ainda',
@@ -271,8 +300,9 @@ class _ImprovementDashboardScreenState
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: AppTheme.successColor.withValues(alpha: 0.1),
-                child: const Icon(Icons.done, color: AppTheme.successColor),
+                backgroundColor:
+                    AppTheme.shellAccentGreen.withValues(alpha: 0.15),
+                child: const Icon(Icons.done, color: AppTheme.shellAccentGreen),
               ),
               title: Text(speech.title),
               subtitle: Text(
@@ -280,7 +310,8 @@ class _ImprovementDashboardScreenState
                     ? 'Feedback registrado'
                     : 'Adicionar feedback',
               ),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(Icons.chevron_right,
+                  color: AppTheme.shellTextSecondary),
               onTap: () => _showFeedbackDialog(speech),
             ),
           );
@@ -306,6 +337,7 @@ class _ImprovementDashboardScreenState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppTheme.shellSurfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -330,12 +362,14 @@ class _ImprovementDashboardScreenState
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                        color: AppTheme.shellAccentTeal.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Objetivo: ${speech.centralObjective}',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.shellTextPrimary,
+                            ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -343,9 +377,7 @@ class _ImprovementDashboardScreenState
                       title: const Text('Objetivo alcançado?'),
                       value: objectiveAchieved,
                       onChanged: (value) {
-                        setModalState(() {
-                          objectiveAchieved = value;
-                        });
+                        setModalState(() => objectiveAchieved = value);
                       },
                     ),
                     const SizedBox(height: 16),
@@ -359,10 +391,9 @@ class _ImprovementDashboardScreenState
                       max: 5,
                       divisions: 4,
                       label: '$engagement/5',
+                      activeColor: AppTheme.shellAccentTeal,
                       onChanged: (value) {
-                        setModalState(() {
-                          engagement = value.toInt();
-                        });
+                        setModalState(() => engagement = value.toInt());
                       },
                     ),
                     const SizedBox(height: 16),
@@ -393,7 +424,7 @@ class _ImprovementDashboardScreenState
                       ),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton(
+                    FilledButton(
                       onPressed: () async {
                         final feedback = FeedbackRecord(
                           objectiveAchieved: objectiveAchieved,
@@ -417,11 +448,14 @@ class _ImprovementDashboardScreenState
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Feedback salvo!'),
-                              backgroundColor: AppTheme.successColor,
+                              backgroundColor: AppTheme.shellAccentGreen,
                             ),
                           );
                         }
                       },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.shellAccentTeal,
+                      ),
                       child: const Text('Salvar Feedback'),
                     ),
                   ],
@@ -445,6 +479,7 @@ class _ImprovementDashboardScreenState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppTheme.shellSurfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -471,7 +506,8 @@ class _ImprovementDashboardScreenState
                   maxLines: 4,
                   decoration: const InputDecoration(
                     labelText: 'Lições aprendidas',
-                    hintText: 'O que funcionou e o que ajustar no próximo discurso?',
+                    hintText:
+                        'O que funcionou e o que ajustar no próximo discurso?',
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -485,11 +521,12 @@ class _ImprovementDashboardScreenState
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: () async {
                       final current = speech.feedbackRecord;
                       final feedback = FeedbackRecord(
-                        competencyRatings: current?.competencyRatings ?? const {},
+                        competencyRatings:
+                            current?.competencyRatings ?? const {},
                         strengths: current?.strengths ?? const [],
                         improvements: improvementsController.text
                             .split('\n')
@@ -509,11 +546,14 @@ class _ImprovementDashboardScreenState
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Observações salvas com sucesso!'),
-                            backgroundColor: AppTheme.successColor,
+                            backgroundColor: AppTheme.shellAccentGreen,
                           ),
                         );
                       }
                     },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.shellAccentTeal,
+                    ),
                     child: const Text('Salvar Observações'),
                   ),
                 ),
@@ -547,7 +587,7 @@ class _MetricTile extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color),
@@ -560,10 +600,7 @@ class _MetricTile extends StatelessWidget {
                 color: color,
               ),
         ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
